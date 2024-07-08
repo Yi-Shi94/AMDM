@@ -1,0 +1,9 @@
+env_module: "policy.envs.sampletask_env:SampleTaskEnv"
+env_name: "SampleTaskEnv"
+num_parallel: 1
+num_parallel_test: 1
+max_timestep: 1000
+frame_skip: 1
+
+#text: ['sidestep', 'forward', 'backward', 'stand still',',']
+num_candidate: 10

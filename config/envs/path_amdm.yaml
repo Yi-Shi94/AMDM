@@ -1,0 +1,28 @@
+env_module: "policy.envs.path_env:PathEnv"
+env_name: "PathEnv"
+num_parallel: 500
+num_parallel_test: 1
+
+max_timestep: 1000
+max_timestep_test: 1000
+frame_skip: 1
+
+#text: ['sidestep', 'forward', 'backward', 'stand still',',']
+
+
+#AMDM
+action_scale: 1
+model_type: 'amdm'
+init_w_scale: 3
+w_penalty_weight: 0.1
+action_mode: 'full' #epsilon, locomotion
+action_step:  [24,23,22,21,20,19,18,17,16,14,12,10,8,6,4,3]
+repaint: 1
+
+#HUMOR
+#action_scale: 1
+#model_type: 'humor'
+
+#mvae
+#action_scale: 1
+#model_type: 'mvae'

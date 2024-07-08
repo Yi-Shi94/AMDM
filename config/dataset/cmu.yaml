@@ -1,0 +1,11 @@
+ 
+data: 
+  dataset_name: "AMASS"
+  path: "data/AMASS_processed/CMU"
+  dataset_class_name: "AMASS"
+  min_motion_len: 0
+  max_motion_len: -1
+  data_trim_begin: 0
+  data_trim_end: 0
+  data_rot_rpr: 6d
+  data_component: [position,velocity,angle,offset]

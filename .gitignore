@@ -1,3 +1,13 @@
+wandb/
+data/*
+deps/*
+body_models/*
+render/smpl/joints2smpl/smpl_models/*
+wandb/*
+data/*
+train_logs/*
+output/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

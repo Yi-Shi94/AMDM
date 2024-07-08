@@ -1,0 +1,10 @@
+env_module: "policy.envs.vis_env:DataVisEnv"
+env_name: "DataVisEnv"
+
+start_timestep: 200
+max_timestep: 10000
+
+num_parallel: 2
+num_parallel_test: 2
+
+camera_tracking: True
