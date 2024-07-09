@@ -293,11 +293,23 @@ class InpaintEnv(base_env.EnvBase):
                 max_timestep = 640
                 R = edit_dict['trajectory'].get('radius',13)
                 dir = edit_dict['trajectory'].get('direction', 'forward')
-                dir = -1 if dir == 'forward' else 1
+
+                if dir == 'forward':
+                    content[:, start_frame: end_frame, 0] = 0
+                    content[:, start_frame: end_frame, 1] = -2*math.pi*R/max_timestep
+                elif dir == 'backward':
+                    content[:, start_frame: end_frame, 0] = 0
+                    content[:, start_frame: end_frame, 1] = 2*math.pi*R/max_timestep
+                elif dir == 'side1':
+                    content[:, start_frame: end_frame, 0] = 2*math.pi*R/max_timestep
+                    content[:, start_frame: end_frame, 1] = 0
+                elif dir == 'side2':
+                    content[:, start_frame: end_frame, 0] = -2*math.pi*R/max_timestep
+                    content[:, start_frame: end_frame, 1] = 0
+
                 mask[:, start_frame: end_frame, [0,1]] = 1
                 mask[:, start_frame: end_frame, dim_lst[0]:dim_lst[1]] =1 
-                content[:, start_frame: end_frame, 0] = 0#self.max_timestep
-                content[:, start_frame: end_frame, 1] = dir * 2*math.pi*R/max_timestep
+                
                 content[:, start_frame: end_frame, dim_lst[0]:dim_lst[1]] = self.dataset.get_heading_from_val(2*math.pi/max_timestep)#self.max_timestep)
 
             #print(content.shape)

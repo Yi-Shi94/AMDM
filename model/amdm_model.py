@@ -362,7 +362,7 @@ class GaussianDiffusion(nn.Module):
                 i = steps.index(t)
                 dx = action_dict[...,(i+1)*action_dim_per_step:(i+2)*action_dim_per_step] 
                 dx = dx * (1.1 + torch.randn_like(dx)) 
-                x = torch.clamp(x+dx, -2.5, 2.5)
+                x = torch.clamp(x+dx, -3, 3)
                
             if t > 0:
                 x = self.add_noise(x, ts)

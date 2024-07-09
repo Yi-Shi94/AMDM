@@ -74,7 +74,7 @@ class PPOAgent(object):
         self.eps = config["eps"]
         self.save_interval = config["save_interval"]
         
-        self.actor_reg_weight = config.get('actor_reg_weight',0.3)
+        self.actor_reg_weight = config.get('actor_reg_weight',1)
         self.actor_bound_weight = config.get('actor_bound_weight',0.0)
         
         #self.w_penalty_weight = 10
@@ -128,10 +128,8 @@ class PPOAgent(object):
         action_reg_loss = torch.mean(torch.square(norm_a), dim=-1)
         return action_reg_loss.mean()
 
-    
 
     def train_controller(self, out_model_file, int_output_dir):
-        
         obs = self.env.reset()
         self.rollouts.observations[0].copy_(obs)
         self.rollouts.to(self.device)
@@ -266,9 +264,10 @@ class PPOAgent(object):
                 regr = 0.0
                 if self.actor_reg_weight > 0.0:
                     action_rgr_loss = self.actor_reg_weight * self.compute_action_reg_weight(actions_batch, self.action_mask)
-                    #print(action_rgr_loss)
+                   
                     action_loss += action_rgr_loss
                     regr += action_rgr_loss
+                
                 if self.actor_bound_weight > 0.0:
                     action_bound_loss = self.actor_bound_weight * self.compute_action_bound_loss(actions_batch)
                     action_loss += action_bound_loss

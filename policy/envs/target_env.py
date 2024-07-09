@@ -24,8 +24,8 @@ class TargetEnv(base_env.EnvBase):
         self.valid_idx = self.dataset.valid_idx
         
         self.index_of_target = 0
-        self.arena_length = (-8.0, 8.0)
-        self.arena_width = (-8.0, 8.0)
+        self.arena_length = (-9.0, 9.0)
+        self.arena_width = (-9.0, 9.0)
         #self.max_timestep = 1200/ 
         # 2D delta to task in root space
         self.num_future_predictions = 1
@@ -245,7 +245,7 @@ class TargetEnv(base_env.EnvBase):
         #foot_slide_penalty = self.calc_foot_slide().sum(dim=-1)
        
         target_dist = -self.linear_potential
-        target_is_close = target_dist < 0.5
+        target_is_close = target_dist < 0.65
 
         #progress = 15*torch.exp(-target_dist)
         
