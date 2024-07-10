@@ -4,9 +4,11 @@
 --model_path output/base/amdm_lafan1_25s_eps/model_param.pth
 --agent_config config/agents/ppo.yaml
 
---controller_path output/target/amdm_lafan1_25s_eps1/_ep440.pt
+--int_output_dir output/target/amdm_lafan1_25s_eps/
+--out_model_file output/target/amdm_lafan1_25s_eps/policy_model.pth
 
---rand_seed 100
+
 --device cuda:0
---mode test
+--mode train
 --master_port 0
+--rand_seed 0 

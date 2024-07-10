@@ -22,10 +22,7 @@ class AMDM(model_base.BaseModel):
         super().__init__(config, dataset, device)
        
         self.estimate_mode = config["diffusion"]["estimate_mode"]   
-        
         self.loss_type = config["diffusion"]["loss_type"] 
-        self.repaint_n = config["diffusion"].get("repaint_n",1) 
-        
         
         self.T = config["diffusion"]["T"] 
         self.sample_mode = config["diffusion"]["sample_mode"]  
@@ -58,7 +55,6 @@ class AMDM(model_base.BaseModel):
         return x
 
     def _build_model(self, config):
-        model_name = config["model_name"]
         self.diffusion = GaussianDiffusion(config)
         self.diffusion.to(self.device)
         return
@@ -69,7 +65,6 @@ class AMDM(model_base.BaseModel):
             if self.sample_mode == 'ddpm':
                 next_x =  diffusion.sample_ddpm(cur_x, extra_dict, record_process)
             elif self.sample_mode == 'ddim':
-                #print(self.sample_mode)
                 next_x = diffusion.sample_ddim(cur_x, self.eval_T, 0.0, extra_dict)
             else:
                 assert(False), "Unsupported agent: {}".format(self.estimate_mode)
@@ -81,7 +76,7 @@ class AMDM(model_base.BaseModel):
 
     def rl_step(self, start_x, action_dict, extra_dict):
         diffusion = self.ema_diffusion if self.use_ema else self.diffusion 
-        return diffusion.sample_rl_ddpm(start_x, action_dict, extra_dict, repaint_n=self.repaint_n)
+        return diffusion.sample_rl_ddpm(start_x, action_dict, extra_dict)
 
     
     def eval_seq(self, start_x, extra_dict, num_steps, num_trials, align_rpr=False, record_process=False):
@@ -335,17 +330,14 @@ class GaussianDiffusion(nn.Module):
         return x
 
     
-    def sample_rl_ddpm(self, last_x, action_dict, extra_info, repaint_n):
+    def sample_rl_ddpm(self, last_x, action_dict, extra_info):
         
-        #repaint_num_remain = repaint_n
-        
-        #print(action_dict.shape)
         steps = extra_info['action_step']
         action_mode = extra_info['action_mode']
-       
+        is_train = extra_info['is_train']
         action_dim_per_step = 8 if action_mode == 'loco' else self.frame_dim
         
-        x = action_dict[...,:action_dim_per_step]/2
+        x = action_dict[...,:action_dim_per_step] / 3
         for t in range(self.T - 1, -1, -1):
             with torch.no_grad():
                 
@@ -359,10 +351,16 @@ class GaussianDiffusion(nn.Module):
                     x = pred
             
             if t in steps:
-                i = steps.index(t)
-                dx = action_dict[...,(i+1)*action_dim_per_step:(i+2)*action_dim_per_step] 
-                dx = dx * (1.1 + torch.randn_like(dx)) 
-                x = torch.clamp(x+dx, -3, 3)
+                i = steps.index(t) + 1
+                dx = action_dict[...,i*action_dim_per_step:(i+1)*action_dim_per_step] 
+                #print(action_dict.shape, dx.shape)
+                if is_train:
+                    scale = torch.randn_like(dx) * 0.25
+                else:
+                    scale = torch.randn_like(dx) * 0.08
+                x += dx + scale * self.extract(self.sigma, ts, x.shape)[0] 
+                
+                x = torch.clamp(x, -2.5, 2.5)
                
             if t > 0:
                 x = self.add_noise(x, ts)

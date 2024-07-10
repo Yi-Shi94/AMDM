@@ -24,10 +24,9 @@ class TargetEnv(base_env.EnvBase):
         self.valid_idx = self.dataset.valid_idx
         
         self.index_of_target = 0
-        self.arena_length = (-9.0, 9.0)
-        self.arena_width = (-9.0, 9.0)
-        #self.max_timestep = 1200/ 
-        # 2D delta to task in root space
+        self.arena_length = (-7.0, 7.0)
+        self.arena_width = (-7.0, 7.0)
+
         self.num_future_predictions = 1
         self.num_condition_frames = 1
         

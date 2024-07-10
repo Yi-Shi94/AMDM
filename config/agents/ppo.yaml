@@ -9,14 +9,16 @@ entropy_coef:  0.0
 use_gae: True
 gamma: 0.99
 gae_lambda: 0.95  
-max_grad_norm: 1.0
+max_grad_norm: 0.5
 
-lr: 0.0001
-final_lr: 0.000001
+lr: 0.00002
+final_lr: 0.0000001
 eps: 0.00000001
 lr_decay_type: "exponential"
 mini_batch_size: 2000
 save_interval: 20
+actor_reg_weight: 1
+actor_bound_weight: 0.0
 
 distr_type: fixed #adaptive #adaptive,fixed
 distr_std: 0.5

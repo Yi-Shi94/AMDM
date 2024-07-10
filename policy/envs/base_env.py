@@ -40,45 +40,18 @@ class EnvBase(gym.Env):
                 
         self.action_scale = config.get('action_scale',1)
         
-        """  #### diffusion hack######
-        self.is_amdm = False
-        if model.NAME in ['AMDM','AMDMCOND']:
-            self.is_amdm = True
-            self.diffusion_action_mode = config.get('action_mode','full') #epsilon, locomotion, full
-            self.diffusion_action_step =  config.get('action_step',[5,10,20,30])
-            self.repaint_step = config.get('repaint_step',1)
-
-            self.model.action_mode = self.diffusion_action_mode
-            #if hasattr(model, 'action_step'):
-            self.model.action_step = self.diffusion_action_step
-            self.model.action_scale = self.action_scale
-            #if hasattr(model, 'repaint_step'):
-            self.model.repaint_step = self.repaint_step
-            if self.diffusion_action_mode == 'locomotion':
-                self.action_base_dim = 3
-            elif self.diffusion_action_mode == 'full':
-                self.action_base_dim = dataset.frame_dim 
-
-            self.action_dim = self.action_base_dim * len(self.diffusion_action_step) + self.action_base_dim
-            self.model.action_dim = self.action_dim
-
-        #########################
-        else:
-            self.action_dim = self.model.action_dim if hasattr(self.model,'action_dim') else 64
-        """
 
         self.model_type = config['model_type']
         if config['model_type'] == 'amdm':
-            print(config['model_type'],config['action_step']) 
-            self.use_action_mask = config.get('use_action_mask',True)
+            
             self.action_step = config['action_step']
+            self.use_action_mask = config.get('use_action_mask',False)
+            
             if len(config['action_step']) == 0:
                 self.action_step = list(range(model.T))
             self.action_mode = config['action_mode']
-            self.init_w_scale = config['init_w_scale']
-            self.w_penalty_weight = config['w_penalty_weight']
             
-           
+            
             if self.action_mode == 'loco':
                 self.action_dim_per_step = 8
                 
@@ -86,12 +59,9 @@ class EnvBase(gym.Env):
                 self.action_dim_per_step = self.frame_dim 
             
             self.action_dim = self.frame_dim + self.action_dim_per_step * len(self.action_step)
-            self.action_mask = [0 for _ in range(self.frame_dim)]
-            
-            for i in range(1,len(self.action_step)+1):
-                self.action_mask += [i for _ in range(self.action_dim_per_step)]
-            
-            self.extra_info = {'action_step':self.action_step,'action_mode':self.action_mode}
+           
+           
+            self.extra_info = {'action_step':self.action_step,'action_mode':self.action_mode, 'is_train': not self.is_rendered}
             
 
 
@@ -201,10 +171,7 @@ class EnvBase(gym.Env):
         
         with torch.no_grad():
             output = self.model.rl_step(condition, action, extra_info)
-            #output = self.dataset.unify_rpr_within_frame(condition, output)
-            #output = self.model.sample_ddim(condition, 2, 0.0, extra_info)
-            #output = self.model.sample_ddpm(condition, 2, 0.0, extra_info)
-        
+            
         if self.is_rendered:
             self.record_motion_seq[:,self.record_timestep,:]= output.cpu().detach().numpy()
             self.record_timestep += 1
@@ -306,15 +273,8 @@ class EnvBase(gym.Env):
 
 
     def step(self, action):
-        #action[...,:self.frame_dim] = action[...,:self.frame_dim] * self.action_scale
-        #action[...,self.frame_dim:] = action[...,self.frame_dim:] * self.action_scale
-        
         next_frame = self.get_next_frame(action)
         obs, reward, done, info = self.calc_env_state(next_frame)
-        
-        if self.model_type =='amdm':
-            info['action_mask'] = self.action_mask if self.use_action_mask else None
-            info['w_penalty_weight'] = self.w_penalty_weight
         return (obs, reward, done, info)
         
         

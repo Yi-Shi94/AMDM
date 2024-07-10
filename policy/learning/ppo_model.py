@@ -16,11 +16,8 @@ class PPOModel(nn.Module):
         self.actor = ActorNet(env).to(device)
         self.critic = CriticNet(env).to(device)
         init_weights(self.actor) 
-        #self.w = torch.nn.Parameter(torch.ones(1,requires_grad=True).to(device)*0.15) 
-        
-        
         self.distr_type = config['distr_type']
-        self.std_value = config.get('distr_std',0.3)
+        self.std_value = config['distr_std']
 
         if self.distr_type == 'fixed':
             self.dist = DiagGaussian_fixed(self.std_value)

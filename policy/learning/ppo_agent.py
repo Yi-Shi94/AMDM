@@ -50,6 +50,7 @@ class PPOAgent(object):
         self.num_epoch = 0
         obs_shape = self.env.observation_space.shape
         obs_shape = (obs_shape[0], *obs_shape[1:])
+        
 
         self.rollouts = RolloutStorage(
             self.num_steps_per_rollout,
@@ -74,19 +75,23 @@ class PPOAgent(object):
         self.eps = config["eps"]
         self.save_interval = config["save_interval"]
         
+
+        self.action_steps = self.env.config['action_step']
+        self.action_rgr_steps = [self.action_steps.index(s)+1 for s in self.env.config.get('action_rgr_step', [])]
+        self.action_mask = torch.zeros(self.mini_batch_size, len(self.action_steps)+1, self.env.frame_dim).to(self.device)
+
+        if len(self.action_rgr_steps) > 0:
+            self.action_mask[:, self.action_rgr_steps] = 1
+        self.action_mask = self.action_mask.view(self.mini_batch_size,-1)
         self.actor_reg_weight = config.get('actor_reg_weight',1)
         self.actor_bound_weight = config.get('actor_bound_weight',0.0)
         
-        #self.w_penalty_weight = 10
-
         self.optimizer = optim.Adam(self.actor_critic.parameters(), lr=self.lr, eps=self.eps)
         if not self.env.is_rendered:
             self.logger = logging_util.wandbLogger(run_name=env.int_output_dir, proj_name="HCONTROL_{}_{}_{}_{}".format(self.NAME,env.NAME, env.model.NAME, env.dataset.NAME, self.NAME))
 
     def test_controller(self):
-       #self.num_parallel = self.config['num_parallel_test']
         self.num_parallel = self.env.num_parallel_test
-        #self.env.is_rendered = True
         obs = self.env.reset()
         ep_reward = 0
 
@@ -114,18 +119,15 @@ class PPOAgent(object):
 
 
     def compute_action_bound_loss(self, norm_a, bound_min=-1, bound_max=1):
-        # assume that actions have been normalized between [-1, 1]
         violation_min = torch.clamp_max(norm_a.mean() - bound_min, 0.0)
         violation_max = torch.clamp_min(norm_a.mean() - bound_max, 0)
         bound_violation_loss = torch.sum(torch.square(violation_min), dim=-1) \
                     + torch.sum(torch.square(violation_max), dim=-1)
         return bound_violation_loss.mean()
 
-    def compute_action_reg_weight(self, norm_a, mask=None):
-        #print(norm_a.shape, mask.shape, mask)
-        if mask is not None:
-            norm_a = norm_a * mask[None,...]
-        action_reg_loss = torch.mean(torch.square(norm_a), dim=-1)
+    def compute_action_reg_weight(self, norm_a, mask):
+        norm_a = norm_a * mask
+        action_reg_loss = torch.sum(torch.square(norm_a), dim=-1)
         return action_reg_loss.mean()
 
 
@@ -160,13 +162,6 @@ class PPOAgent(object):
 
                 end_of_rollout = info.get("reset")
                 
-                if 'action_mask' in info and info.get("action_mask") is not None:
-                    if not hasattr(self, "action_mask"):
-                        self.action_mask = torch.tensor(info.get("action_mask")).to(self.device)
-                        #self.w_penalty_weight = info.get("w_penalty_weight")
-                else:
-                    if not hasattr(self, "action_mask"):
-                        self.action_mask = None
                 
                 masks = (~done).float()
                 bad_masks = (~(done * end_of_rollout)).float()
@@ -209,7 +204,6 @@ class PPOAgent(object):
                     "value_loss": value_loss,
                     "action_loss": action_loss,
                     "regr": regr, 
-                    #"w1": self.actor_critic.w.item(),
                 }
             self.logger.log_epoch(stats, step=int(num_samples))
             self.logger.print_log(stats)
@@ -273,13 +267,6 @@ class PPOAgent(object):
                     action_loss += action_bound_loss
                     regr += action_bound_loss
                 
-                #if self.w_penalty_weight > 0.0:
-                    #step_weight = torch.arange(self.actor_critic.w.shape[0], 0, step=-1, device=self.actor_critic.w.device)#[::-1]
-                    #print(step_weight, self.actor_critic.w, self.actor_critic.w * step_weight)
-                    #print(self.actor_critic.w.grad, self.actor_critic.w.requires_grad )
-                #    wregr = self.w_penalty_weight * self.actor_critic.w
-                #    regr += wregr.mean()
-                #    action_loss += wregr.mean()
                 
                 value_loss = (return_batch - values).pow(2).mean()
                 self.optimizer.zero_grad()
