@@ -29,16 +29,13 @@ class PathEnv(target_env.TargetEnv):
         high = np.inf * np.ones([self.observation_dim])
         self.observation_space = gym.spaces.Box(-high, high, dtype=np.float32)
 
-        #self.path = torch.stack((x, y), dim=1)
+        
         self.path = self.sample_random_traj_nodr(1)[0]
-        """ self.path = torch.zeros(self.max_timestep//4,2).to(self.device).float()
-        radius = 2
-        theta = np.linspace(0, 2*np.pi, self.max_timestep//4)
-        x = radius * np.cos(theta) - radius 
-        y = radius * np.sin(theta)
-        self.path[...,0] = torch.from_numpy(x).to(self.device)
-        self.path[...,1] = torch.from_numpy(y).to(self.device) """
-      
+        
+        if self.is_rendered:
+            #np.save(osp.join(self.int_output_dir,'traj.npy'), self.path.cpu().detach().numpy())
+            self.viewer.add_path_markers(self.path)
+
 
     def sample_random_traj_nodr(self, num_parallel=1):
         traj = torch.zeros(num_parallel,self.max_timestep,2)

@@ -11,10 +11,10 @@ frame_skip: 1
 
 
 #AMDM
-action_scale: 1.0
+action_scale: 1.2
 random_scale: 1
 
-test_random_scale: 0
+test_random_scale: 1.0
 
 model_type: 'amdm'
 

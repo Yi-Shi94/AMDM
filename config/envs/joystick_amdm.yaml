@@ -13,9 +13,9 @@ frame_skip: 1
 #AMDM
 action_scale: 1
 
-random_scale: 0.1
+random_scale: 1.0
 test_random_scale: 0
-clip_scale: 5
+clip_scale: 3
 
 model_type: 'amdm'
 action_mode: 'full' #epsilon, locomotion

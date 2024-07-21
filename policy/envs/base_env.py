@@ -185,7 +185,8 @@ class EnvBase(gym.Env):
             self.record_motion_seq[:,self.record_timestep,:]= output.cpu().detach().numpy()
             self.record_timestep += 1
             if self.record_timestep % 90 == 0 and self.record_timestep != 0:
-                self.save_motion()
+                pass
+                #self.save_motion()
             
         return output
 
