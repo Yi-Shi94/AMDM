@@ -13,14 +13,14 @@ frame_skip: 1
 #AMDM
 action_scale: 1
 
-random_scale: 1
-test_random_scale: 1
-
+random_scale: 0.1
+test_random_scale: 0
+clip_scale: 5
 
 model_type: 'amdm'
 action_mode: 'full' #epsilon, locomotion
-action_rgr_step: [4,3]
-action_step: [24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3]
+action_rgr_step: [4,3,2]
+action_step: [24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2]
 
 
 

@@ -34,14 +34,14 @@ class JoystickEnv(target_env.TargetEnv):
     def reset_target(self, indices=None, location=None):
         if not self.is_rendered:
             facing_switch_every = 100
-            speed_switch_every = 180
+            speed_switch_every = 100
             if self.timestep % facing_switch_every == 0:
                 # in training mode, we have tensors
                 self.target_direction_buf.uniform_(0, 2 * np.pi)
 
             if self.timestep % speed_switch_every == 0:
                 # in training mode, we have tensors
-                choices = torch.linspace(0, 0.8, 9).to(self.device)
+                choices = torch.linspace(-6, 6, 120).to(self.device)
                 sample = torch.randint(0, choices.size(0), (self.num_parallel, 1))
                 self.target_speed_buf.copy_(choices[sample])
             
@@ -106,10 +106,10 @@ class JoystickEnv(target_env.TargetEnv):
     
     def calc_progress_reward(self):
         _, target_delta = self.get_target_delta_and_angle()
-        direction_reward = target_delta.cos().add(-1)
+        direction_reward = 10 * target_delta.cos().add(-1)
         #print(target_angle.item(), target_angle.cos().item(), direction_reward.item())
 
-        speed_dir = -(self.next_frame[:,  1]/(1e-6 + self.next_frame[:,  1]).abs())[:,None]
+        speed_dir = -(self.next_frame[:,  1]/(1e-8 + self.next_frame[:,  1].abs()))[:,None]
         
         speed =  speed_dir * self.next_frame[:, [0, 1]].norm(dim=1, keepdim=True)
         

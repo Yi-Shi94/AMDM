@@ -39,13 +39,6 @@ class PathEnv(target_env.TargetEnv):
         self.path[...,0] = torch.from_numpy(x).to(self.device)
         self.path[...,1] = torch.from_numpy(y).to(self.device) """
       
-        #self.path = self.genetrate_random_path()[0]
-        
-        if self.is_rendered:
-            np.save(osp.join(self.int_output_dir,'traj.npy'), self.path.cpu().detach().numpy())
-            print(osp.join(self.int_output_dir,'traj.npy'))
-            self.viewer.add_path_markers(self.path)
-
 
     def sample_random_traj_nodr(self, num_parallel=1):
         traj = torch.zeros(num_parallel,self.max_timestep,2)
