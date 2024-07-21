@@ -1,12 +1,11 @@
-
---env_config config/envs/target_amdm.yaml
---model_config config/model/amdm_lafan1_subj5.yaml
+--model_config output/base/amdm_lafan1_25s_eps/config.txt
 --model_path output/base/amdm_lafan1_25s_eps/model_param.pth
---agent_config config/agents/ppo.yaml
 
---controller_path output/target/amdm_lafan1_25s_eps1/_ep440.pt
+--agent_config output/target/amdm_lafan1_25s_eps_no_greedy3/ppo.yaml
+--env_config output/target/amdm_lafan1_25s_eps_no_greedy3/target_amdm.yaml
+--int_output_dir output/target/amdm_lafan1_25s_eps_no_greedy3/
+--controller_path output/target/amdm_lafan1_25s_eps_no_greedy3/policy_model.pth
 
---rand_seed 100
 --device cuda:0
 --mode test
 --master_port 0

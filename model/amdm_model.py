@@ -181,19 +181,19 @@ class GaussianDiffusion(nn.Module):
         self.T = config["diffusion"]['T']
         self.schedule_mode = config["diffusion"]["noise_schedule_mode"]
         self.estimate_mode = config["diffusion"]["estimate_mode"]
-        self.norm_type = config["model_hyperparam"].get("norm_type", "layer_norm")
+        self.norm_type = config["model_hyperparam"]["norm_type"]
+        self.act_type = config["model_hyperparam"]["act_type"]
         self.time_emb_dim = config["model_hyperparam"]["time_emb_size"]
         self.hidden_dim = config["model_hyperparam"]["hidden_size"]
         self.layer_num = config["model_hyperparam"]["layer_num"]
         self.frame_dim = config['frame_dim']
 
-        self.model = NoiseDecoder(self.frame_dim, self.hidden_dim, self.time_emb_dim, self.layer_num,self.norm_type)
+        self.model = NoiseDecoder(self.frame_dim, self.hidden_dim, self.time_emb_dim, self.layer_num, self.norm_type, self.act_type)
         self.time_mlp = torch.nn.Sequential(
             Embedding.PositionalEmbedding(self.time_emb_dim, 1.0),
             torch.nn.Linear(self.time_emb_dim, self.time_emb_dim),
             Activation.SiLU(),
             torch.nn.Linear(self.time_emb_dim, self.time_emb_dim),
-            #torch.nn.Linear(self.time_emb_dim, self.time_emb_dim),
         )
         
         betas = self._generate_diffusion_schedule()
@@ -333,8 +333,15 @@ class GaussianDiffusion(nn.Module):
     def sample_rl_ddpm(self, last_x, action_dict, extra_info):
         
         steps = extra_info['action_step']
+        train_rand_scale =  extra_info['rand_scale']
+        test_rand_scale = extra_info['test_rand_scale']
+        clip_scale = extra_info['clip_scale']
+
         action_mode = extra_info['action_mode']
         is_train = extra_info['is_train']
+        
+        action_scale = extra_info['action_scale'] if is_train else extra_info['test_action_scale']
+
         action_dim_per_step = 8 if action_mode == 'loco' else self.frame_dim
         
         x = action_dict[...,:action_dim_per_step] / 3
@@ -353,14 +360,12 @@ class GaussianDiffusion(nn.Module):
             if t in steps:
                 i = steps.index(t) + 1
                 dx = action_dict[...,i*action_dim_per_step:(i+1)*action_dim_per_step] 
-                #print(action_dict.shape, dx.shape)
-                if is_train:
-                    scale = torch.randn_like(dx) * 0.25
-                else:
-                    scale = torch.randn_like(dx) * 0.08
-                x += dx + scale * self.extract(self.sigma, ts, x.shape)[0] 
+                rand_scale = train_rand_scale if is_train else test_rand_scale
                 
-                x = torch.clamp(x, -2.5, 2.5)
+                rand_scale *= torch.randn_like(dx) 
+
+                x += action_scale * (dx + rand_scale * self.extract(self.sigma, ts, x.shape)[0])
+                x = torch.clamp(x, -clip_scale, clip_scale)
                
             if t > 0:
                 x = self.add_noise(x, ts)
@@ -449,6 +454,7 @@ class GaussianDiffusion(nn.Module):
         device = cur_x.device
         if ts is None:
             ts = torch.randint(0, self.T, (bs,), device=device)
+        
         time_emb = self.time_mlp(ts) 
 
         noise = torch.randn_like(next_x)
@@ -520,16 +526,18 @@ class NoiseDecoder(nn.Module):
         hidden_size,
         time_emb_size,
         layer_num,
-        norm_type
+        norm_type,
+        act_type
     ):
         super().__init__()
 
         self.input_size = frame_size
-
         layers = []
         for _ in range(layer_num): 
-            #non_linear = Activation.SiLU() ### v12 is ReLU
-            non_linear = torch.nn.ReLU()
+            if act_type == 'ReLU':
+                non_linear = torch.nn.ReLU() ### v12 is ReLU
+            elif act_type == 'SiLU':
+                non_linear = Activation.SiLU() 
             linear = nn.Linear(hidden_size + frame_size * 2 + time_emb_size, hidden_size)
             if norm_type == 'layer_norm':
                 norm_layer = nn.LayerNorm(hidden_size)

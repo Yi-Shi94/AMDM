@@ -12,13 +12,15 @@ frame_skip: 1
 
 #AMDM
 action_scale: 1
-model_type: 'amdm'
-init_w_scale: 3
-w_penalty_weight: 0.1
-action_mode: 'full' #epsilon, locomotion
-action_step: [7,6,5,4,3] #[24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2]
-repaint: 1
 
+model_type: 'amdm'
+action_rgr_step: [4,3,2]
+action_mode: 'full' #epsilon, locomotion
+action_step: [24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2]
+
+
+random_scale: 1
+test_random_scale: 1
 #HUMOR
 #action_scale: 3
 #model_type: 'humor'

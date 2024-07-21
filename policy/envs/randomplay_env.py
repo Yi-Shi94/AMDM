@@ -9,8 +9,7 @@ from multiprocessing import Process
 
 class RandomPlayEnv(base_env.EnvBase):
     NAME = "RandomPlay"
-    def __init__(self, config, model, dataset, device):      
-        #super().__init__(config, model, dataset, device)
+    def __init__(self, config, model, dataset, device):
         self.device = device
         self.config = config
         self.model = model

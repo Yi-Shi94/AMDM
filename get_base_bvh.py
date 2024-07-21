@@ -13,11 +13,11 @@ import ffmpy
 #start_index = 44480 #different step 44480 ##cartwheel38044 ##10714 + 3186 #in humor unclear
 
 start_index = 1000 # 38046 #38046 #163136+208#sprint intro79552 + 1308 #141243 #257692 #35900#13900 #38044 #71800 #21200 #71730
-step_default = 120
+step_default = 1000
 
 par_path = 'output/base/'
-model_name = 'amdm_lafan1_25s_eps'
-model_config_file = 'config/model/amdm_lafan1_subj5.yaml'
+model_name = 'amdm_lafan1_small'
+model_config_file = 'config/model/amdm_lafan1_subj5_small.yaml'
 
 state_dict = torch.load('{}/{}/model_param.pth'.format(par_path,model_name))
 out_path = '{}/{}/{}_{}step_intro'.format(par_path, model_name, start_index, step_default)  #'output/base/amdm_lafan1_fcc4_cont1/{}_{}step_intro'.format(start_index, step_default) #72040->71800

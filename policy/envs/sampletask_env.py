@@ -234,7 +234,7 @@ class SampleTaskEnv(base_env.EnvBase):
                 self.target[:, 1].index_copy_(dim=0, index=indices, source=new_widths)
             
             
-            targets_lst =torch.tensor([[-5.0,5.0]]).to(self.device)
+            #targets_lst =torch.tensor([[-5.0,5.0]]).to(self.device)
             #          [ -20.0, -14.0],
             #          [ -14.0, -20.0],
             #          #[ -40.0, -25.0],
@@ -246,7 +246,7 @@ class SampleTaskEnv(base_env.EnvBase):
                       #[33,60],
             #          ])
 
-            self.target = targets_lst[None,self.index_of_target]
+            #self.target = targets_lst[None,self.index_of_target]
             self.index_of_target += 1
            
             

@@ -131,7 +131,7 @@ class PBLMocapViewer:
             target_orns = self.env.target_direction_buf
             
             for index, (pos, angle) in enumerate(zip(target_xyzs, target_orns)):
-                orn = self._p.getQuaternionFromEuler([0, 0, -(float(angle)-np.pi/2)])
+                orn = self._p.getQuaternionFromEuler([0, 0, float(angle)-np.pi/2])
                 self.targets.set_position(pos, index, orn)
         else:
             if targets.shape[-1] == 2:
@@ -517,7 +517,6 @@ class MultiTargets:
 
         if colours is not None:
             for index, colour in zip(range(num_characters), colours):
-                #print(index, colour,'sad')
                 if index == 0:
                     colour = [1,0,0,1]
                 self.set_colour(colour, index)

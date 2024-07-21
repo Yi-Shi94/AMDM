@@ -87,12 +87,13 @@ class BaseTrainer():
         for ep in range(0, self.total_epochs+1):
             loss_stats = self.train_loop(ep, model)
 
-            if ep == 0:
-                continue
             if ep % self.test_interval == 0:
-                save_util.save_weight(model, int_output_dir+'_ep{}.pt'.format(ep))
+                if ep == 0:
+                    continue
+                save_util.save_weight(model, int_output_dir+'_ep{}.pth'.format(ep))
+                save_util.save_weight(model, out_model_file)
                 
             self.logger.log_epoch(loss_stats)
             self.logger.print_log(loss_stats)
-            save_util.save_weight(model, out_model_file)
+            
 

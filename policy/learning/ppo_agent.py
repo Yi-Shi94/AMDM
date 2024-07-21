@@ -189,9 +189,9 @@ class PPOAgent(object):
 
             self.rollouts.after_update()
 
-            save_util.save_weight(copy.deepcopy(self.actor_critic).cpu(), out_model_file)
+            save_util.save_weight(copy.deepcopy(self.actor_critic), out_model_file)
             if update % self.save_interval == 0:
-                save_util.save_weight(copy.deepcopy(self.actor_critic).cpu(), int_output_dir + '/_ep{}.pt'.format(update))
+                save_util.save_weight(copy.deepcopy(self.actor_critic), int_output_dir + '/_ep{}.pth'.format(update))
 
             ep_info["reward"] = torch.cat(ep_info["reward"])
             

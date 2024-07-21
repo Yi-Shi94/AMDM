@@ -39,7 +39,7 @@ class EnvBase(gym.Env):
         #self.head_idx = dataset.head_idx
                 
         self.action_scale = config.get('action_scale',1)
-        
+        self.test_action_scale = config.get('test_action_scale',self.action_scale)
 
         self.model_type = config['model_type']
         if config['model_type'] == 'amdm':
@@ -49,9 +49,12 @@ class EnvBase(gym.Env):
             
             if len(config['action_step']) == 0:
                 self.action_step = list(range(model.T))
+            
             self.action_mode = config['action_mode']
-            
-            
+            self.random_scale = config['random_scale']
+            self.test_random_scale = config['test_random_scale']
+
+            self.clip_scale = config.get('clip_scale',2.5)
             if self.action_mode == 'loco':
                 self.action_dim_per_step = 8
                 
@@ -61,7 +64,14 @@ class EnvBase(gym.Env):
             self.action_dim = self.frame_dim + self.action_dim_per_step * len(self.action_step)
            
            
-            self.extra_info = {'action_step':self.action_step,'action_mode':self.action_mode, 'is_train': not self.is_rendered}
+            self.extra_info = {'action_step':self.action_step,
+                               'action_mode':self.action_mode, 
+                               'is_train': not self.is_rendered, 
+                               'action_scale': self.action_scale,
+                               'test_action_scale': self.test_action_scale,
+                               'rand_scale':self.random_scale, 
+                               'test_rand_scale':self.test_random_scale,
+                               'clip_scale':self.clip_scale}
             
 
 
@@ -135,7 +145,6 @@ class EnvBase(gym.Env):
         mat = self.get_rotation_matrix(self.root_facing)
         displacement = (mat * pose_denorm[:, :2].unsqueeze(1)).sum(dim=2)
         dr = self.dataset.get_heading_dr(pose_denorm)[...,None]
-        
         self.root_facing.add_(dr).remainder_(2 * np.pi)
         self.root_xz.add_(displacement)
         
@@ -175,9 +184,9 @@ class EnvBase(gym.Env):
         if self.is_rendered:
             self.record_motion_seq[:,self.record_timestep,:]= output.cpu().detach().numpy()
             self.record_timestep += 1
-            #if self.record_timestep % 90 == 0 and self.record_timestep != 0:
-            #    self.save_motion()
-            #sself.record_num_frames[:] += 1
+            if self.record_timestep % 90 == 0 and self.record_timestep != 0:
+                self.save_motion()
+            
         return output
 
     def reset(self, indices=None):

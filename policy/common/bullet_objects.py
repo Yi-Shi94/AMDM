@@ -227,7 +227,6 @@ class FlagPole:
         self._rgba = tuple(rgba) if rgba is not None else (1, 0, 0, 1)
         self._quat = [1, 0, 0, 1]
 
-        #base_path = os.path.join(current_dir, "data", "misc")
         base_path = "./render/miscs/resources"
         pole_path = os.path.join(base_path, "pole.obj")
 
@@ -275,7 +274,7 @@ class Arrow:
         )
        #self._quat = [0.7071, 0, 0.7071, 0]#[0, 0, 0, 1]
 
-        base_path = "./miscs/resources"
+        base_path ="./render/miscs/resources"
         pole_path = os.path.join(base_path, "arrow.obj")
 
         shape = self._p.createVisualShape(

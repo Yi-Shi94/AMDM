@@ -3,7 +3,7 @@
 --model_config config/model/amdm_lafan1_subj5.yaml
 --model_path output/base/amdm_lafan1_25s_eps/model_param.pth
 --agent_config config/agents/ppo.yaml
-
+--int_output_dir output/target/amdm_lafan1_25s_eps/_ep1300.pth
 --controller_path output/target3d/amdm_lafan1_25s_eps/policy_model.pth
 
 --device cuda:0

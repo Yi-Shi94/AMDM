@@ -2,11 +2,6 @@ import yaml
 import gymnasium as gym
 from gymnasium.envs.registration import register, registry
 
-import policy.envs.vis_env as vis_env
-import policy.envs.randomplay_env as randomplay_env
-import policy.envs.target_env as target_env
-#import policy.envs.joystick_env as joystick_env
-#import policy.envs.path_env as path_env
 
 def build_envs(config_file, int_output_dir, model, dataset, mode, device):
     config = load_yaml_file(config_file)

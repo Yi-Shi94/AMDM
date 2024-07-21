@@ -4,6 +4,7 @@ import torch
 import torch.optim as optim
 import torch.utils.data as data
 import tqdm
+import math
 import copy
 import dataset.util.plot as plot_util
 from dataset.util.skeleton_info import skel_dict
@@ -288,7 +289,7 @@ class BaseMotionData(data.Dataset):
         if self.data_root_rot_dim > 1:
             heading_rot = data[:, self.data_root_linear_dim: self.data_root_linear_dim + self.data_root_rot_dim]
             heading_rot = self.from_rpr_to_rotmat(heading_rot)
-            global_heading = torch.arctan2(heading_rot[:,0,2], heading_rot[:, 2,2]) 
+            global_heading = torch.arctan2(heading_rot[:,1,0], heading_rot[:, 0,0])
         else:
             global_heading = data[:, self.data_root_linear_dim]
         return global_heading

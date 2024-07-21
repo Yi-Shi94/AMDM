@@ -1,12 +1,11 @@
 
---env_config config/envs/target_amdm.yaml
---model_config config/model/amdm_lafan1_subj5.yaml
+--env_config config/envs/path_amdm.yaml
+--model_config output/base/amdm_lafan1_25s_eps/config.txt
 --model_path output/base/amdm_lafan1_25s_eps/model_param.pth
 --agent_config config/agents/ppo.yaml
 
---controller_path output/target/amdm_lafan1_25s_eps/policy_model.pth
+--controller_path output/joystick/amdm_lafan1_25s_eps/policy_model.pth
 
---rand_seed 100
 --device cuda:0
 --mode test
 --master_port 0

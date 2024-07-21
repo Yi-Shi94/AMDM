@@ -37,12 +37,12 @@ edit:
   #   data_start_frame: 0 #241 #301
   #   data_end_frame: 5000 #741 #601
 
-  full_rotation:  #deep fk
-    start_frame: 100 #210 #300
-    end_frame: 101 #510 #600
-    val: data/LAFAN1_tpose/dance2_subject3.bvh # miscs/interact_temp/positions.npy
-    data_start_frame: 1701 #301
-    data_end_frame: 1702 #601
+  #full_rotation:  #deep fk
+  #  start_frame: 100 #210 #300
+  #  end_frame: 101 #510 #600
+  #  val: data/LAFAN1_tpose/dance2_subject3.bvh # miscs/interact_temp/positions.npy
+  #  data_start_frame: 1701 #301
+  #  data_end_frame: 1702 #601
   
   #full_joint: #deep ik
   #  start_frame: 1 #210 #300
@@ -56,12 +56,12 @@ edit:
   #  start_frame: 0
   #  end_frame: -1 
   
-  #trajectory:
-  #  start_frame: 0
-  #  end_frame: -1 
-  #  shape: circle #line
-  #  radius: 8 # 6-16
-  #  direction: side2 # side2 forward backward
+  trajectory:
+    start_frame: 0
+    end_frame: -1 
+    shape: circle #line
+    radius: 7 # 6-16
+    direction: side2 # side2 forward backward
 
   #root_dxdy:
   #  0:

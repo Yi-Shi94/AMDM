@@ -33,8 +33,8 @@ class JoystickEnv(target_env.TargetEnv):
 
     def reset_target(self, indices=None, location=None):
         if not self.is_rendered:
-            facing_switch_every = 120
-            speed_switch_every = 240
+            facing_switch_every = 100
+            speed_switch_every = 180
             if self.timestep % facing_switch_every == 0:
                 # in training mode, we have tensors
                 self.target_direction_buf.uniform_(0, 2 * np.pi)
@@ -45,25 +45,26 @@ class JoystickEnv(target_env.TargetEnv):
                 sample = torch.randint(0, choices.size(0), (self.num_parallel, 1))
                 self.target_speed_buf.copy_(choices[sample])
             
+            
             self.target[:, 0].add_(10 * self.target_direction_buf.cos().squeeze())
             self.target[:, 1].add_(10 * self.target_speed_buf.sin().squeeze())
 
         else:
              
             if self.timestep < 120:
-                self.target_speed = 4.0
-                self.target_direction = np.pi/2
+                self.target_speed = 2.0
+                self.target_direction = 0
 
             elif self.timestep < 280:
-                self.target_speed = 5.0
+                self.target_speed = 2.0
                 self.target_direction = np.pi*3/4
             
             elif self.timestep < 380:
-                self.target_speed = 9.0
+                self.target_speed = 2.0
                 self.target_direction = np.pi/2
             
             elif self.timestep < 600:
-                self.target_speed = 5.0
+                self.target_speed = 2.0
                 self.target_direction = np.pi/2
             
             elif self.timestep < 800:
@@ -74,6 +75,7 @@ class JoystickEnv(target_env.TargetEnv):
                 self.target_speed = 3.0
                 self.target_direction = np.pi
 
+            #self.target_direction -= np.pi/2
             self.target.copy_(self.root_xz)
             self.joystick_arr[:,self.timestep,0] = self.target_speed 
             self.joystick_arr[:,self.timestep,1] = self.target_direction 
@@ -91,14 +93,37 @@ class JoystickEnv(target_env.TargetEnv):
 
         self.calc_potential()
 
-    def calc_progress_reward(self):
+    def calc_potential(self):
         _, target_angle = self.get_target_delta_and_angle()
-        direction_reward = target_angle.cos().add(-1)
-        speed = self.next_frame[:, [0, 1]].norm(dim=1, keepdim=True)
+        self.angular_potential = target_angle.cos()
+
+    def get_target_delta_and_angle(self):
+       
+        target_delta = np.pi - ((self.target_direction - self.root_facing).abs() - np.pi).abs()
+        
+        return 0, target_delta
+    
+    
+    def calc_progress_reward(self):
+        _, target_delta = self.get_target_delta_and_angle()
+        direction_reward = target_delta.cos().add(-1)
+        #print(target_angle.item(), target_angle.cos().item(), direction_reward.item())
+
+        speed_dir = -(self.next_frame[:,  1]/(1e-6 + self.next_frame[:,  1]).abs())[:,None]
+        
+        speed =  speed_dir * self.next_frame[:, [0, 1]].norm(dim=1, keepdim=True)
+        
         speed_reward = (self.target_speed_buf - speed).abs().mul(-1)
+        
+        if self.timestep % 5 ==0 and self.is_rendered:
+            print(self.next_frame[:, [0, 1]],self.next_frame.shape)
+            print('target speed:{:3f}, actual speed:{:3f}, speed reward:{:3f}'.format(self.target_speed, speed.item() ,speed_reward.item()))
+            print('target direction:{:3f}, actual direction:{:3f}, direction reward:{:3f}'.format(self.target_direction, self.root_facing.item(),direction_reward.item()))
+            #print('reward speed:{:4f}, reward direction:{:4f}'.format(speed_reward.item(), direction_reward.item()))
+        
+        #print(self.target_speed_buf- speed, speed_reward)
         return (direction_reward + speed_reward).exp()
-    
-    
+        
     
     def reset_initial_frames(self, frame_index=None):
         # Make sure condition_range doesn't blow up
@@ -108,7 +133,7 @@ class JoystickEnv(target_env.TargetEnv):
         #ensor([[537085]]) ==================
         #tensor([[2122372]]) ==================
         
-        start_index = 163639 #torch.randint(0,num_frame_used-1,(num_init,1))#2122372 #torch.randint(0,num_frame_used-1,(num_init,1)) 
+        start_index = torch.randint(0,num_frame_used-1,(num_init,1))#2122372 #torch.randint(0,num_frame_used-1,(num_init,1)) 
         start_index = self.valid_idx[start_index]
 
         data = torch.tensor(self.dataset.motion_flattened[start_index])
@@ -148,7 +173,6 @@ class JoystickEnv(target_env.TargetEnv):
 
         obs_components = list(self.get_observation_components())
         self.done.fill_(self.timestep >= self.max_timestep)
-        #print(obs_components[0].shape,obs_components[1].shape)
         obs_components[0] = obs_components[0].squeeze(1)
         
         # Everytime this function is called, should call render
@@ -168,21 +192,16 @@ class JoystickEnv(target_env.TargetEnv):
         self.reset_target()
 
 
-    def get_target_delta_and_angle(self):
-        target_delta = self.target - self.root_xz
-        target_angle = (
-            torch.atan2(target_delta[:, 1], target_delta[:, 0]).unsqueeze(1)
-            + self.root_facing
-        )
-        return target_delta, -target_angle
 
 
     def get_observation_components(self):
         condition = self.get_cond_frame()
        
         _, target_angle = self.get_target_delta_and_angle()
+        
         forward_speed = self.target_speed_buf * target_angle.cos()
         sideway_speed = self.target_speed_buf * target_angle.sin()
+        
         return condition, forward_speed, sideway_speed
 
     def dump_additional_render_data(self):
@@ -194,3 +213,4 @@ class JoystickEnv(target_env.TargetEnv):
                 ),
             }
         }
+    

@@ -18,6 +18,7 @@ model_hyperparam:
     use_cond: False
     cond_num_cls: 0
     norm_type: "group_norm"
+    act_type: "ReLU"
 
 optimizer:
     consistency_on: False

@@ -166,7 +166,6 @@ def run(rank, num_procs, args):
             except:
                 actor_critic = torch.load(trained_controller_path)
         
-
             actor_critic.to(device)
             actor_critic.eval()
             agent.actor_critic = actor_critic
