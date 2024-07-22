@@ -52,29 +52,31 @@ class JoystickEnv(target_env.TargetEnv):
         else:
              
             if self.timestep < 120:
-                self.target_speed = 2.0
+                self.target_speed = 1.0
                 self.target_direction = 0
 
             elif self.timestep < 280:
-                self.target_speed = 2.0
-                self.target_direction = np.pi*3/4
-            
-            elif self.timestep < 380:
-                self.target_speed = 2.0
+                self.target_speed = 3.0
                 self.target_direction = np.pi/2
             
+            elif self.timestep < 380:
+                self.target_speed = 3.4
+                self.target_direction = np.pi/4
+            
             elif self.timestep < 600:
-                self.target_speed = 2.0
+                self.target_speed = 3.0
                 self.target_direction = np.pi/2
             
             elif self.timestep < 800:
-                self.target_speed = 5.0 + (self.timestep-600)/360 * 3
+                self.target_speed = 3.0 + (self.timestep-600)/360 * 3
                 self.target_direction = np.pi/2 + (self.timestep-600)/180 * np.pi
 
             elif self.timestep < 900:
                 self.target_speed = 3.0
+                self.target_direction = -np.pi
+            else:
+                self.target_speed = -2.0
                 self.target_direction = np.pi
-
             #self.target_direction -= np.pi/2
             self.target.copy_(self.root_xz)
             self.joystick_arr[:,self.timestep,0] = self.target_speed 
@@ -106,7 +108,7 @@ class JoystickEnv(target_env.TargetEnv):
     
     def calc_progress_reward(self):
         _, target_delta = self.get_target_delta_and_angle()
-        direction_reward = 10 * target_delta.cos().add(-1)
+        direction_reward = 3 * target_delta.cos().add(-1)
         #print(target_angle.item(), target_angle.cos().item(), direction_reward.item())
 
         speed_dir = -(self.next_frame[:,  1]/(1e-8 + self.next_frame[:,  1].abs()))[:,None]
@@ -116,7 +118,6 @@ class JoystickEnv(target_env.TargetEnv):
         speed_reward = (self.target_speed_buf - speed).abs().mul(-1)
         
         if self.timestep % 5 ==0 and self.is_rendered:
-            print(self.next_frame[:, [0, 1]],self.next_frame.shape)
             print('target speed:{:3f}, actual speed:{:3f}, speed reward:{:3f}'.format(self.target_speed, speed.item() ,speed_reward.item()))
             print('target direction:{:3f}, actual direction:{:3f}, direction reward:{:3f}'.format(self.target_direction, self.root_facing.item(),direction_reward.item()))
             #print('reward speed:{:4f}, reward direction:{:4f}'.format(speed_reward.item(), direction_reward.item()))
