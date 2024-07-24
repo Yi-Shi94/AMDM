@@ -41,7 +41,7 @@ class JoystickEnv(target_env.TargetEnv):
 
             if self.timestep % speed_switch_every == 0:
                 # in training mode, we have tensors
-                choices = torch.linspace(-6, 6, 120).to(self.device)
+                choices = torch.linspace(-2, 6, 120).to(self.device)
                 sample = torch.randint(0, choices.size(0), (self.num_parallel, 1))
                 self.target_speed_buf.copy_(choices[sample])
             
@@ -51,29 +51,25 @@ class JoystickEnv(target_env.TargetEnv):
 
         else:
              
-            if self.timestep < 120:
+            if self.timestep < 40:
                 self.target_speed = 1.0
                 self.target_direction = 0
 
-            elif self.timestep < 280:
-                self.target_speed = 3.0
-                self.target_direction = np.pi/2
-            
-            elif self.timestep < 380:
-                self.target_speed = 3.4
+            elif self.timestep < 120:
+                self.target_speed = 2.0
                 self.target_direction = np.pi/4
             
-            elif self.timestep < 600:
-                self.target_speed = 3.0
-                self.target_direction = np.pi/2
-            
-            elif self.timestep < 800:
-                self.target_speed = 3.0 + (self.timestep-600)/360 * 3
-                self.target_direction = np.pi/2 + (self.timestep-600)/180 * np.pi
+            #elif self.timestep < 420:
+            #    self.target_speed = 2.0 + (self.timestep-600)/360 * 3
+            #    self.target_direction = np.pi/2 + (self.timestep-120)/180 * np.pi
 
-            elif self.timestep < 900:
+            elif self.timestep < 200:
                 self.target_speed = 3.0
-                self.target_direction = -np.pi
+                self.target_direction = -np.pi/2
+
+            elif self.timestep < 300:
+                self.target_speed = 3.0
+                self.target_direction = -np.pi/3
             else:
                 self.target_speed = -2.0
                 self.target_direction = np.pi
@@ -83,7 +79,7 @@ class JoystickEnv(target_env.TargetEnv):
             self.joystick_arr[:,self.timestep,1] = self.target_direction 
 
             if self.timestep % 30 ==0:
-                np.save(osp.join(self.int_output_dir,'joystick'), self.joystick_arr)
+                np.save(osp.join(self.int_output_dir,'joystick'), self.joystick_arr[:,:self.timestep])
 
             self.target[:, 0].add_(10 * np.cos(self.target_direction))
             self.target[:, 1].add_(10 * np.sin(self.target_direction))

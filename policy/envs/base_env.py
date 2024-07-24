@@ -38,7 +38,7 @@ class EnvBase(gym.Env):
         self.foot_idx = dataset.foot_idx
         #self.head_idx = dataset.head_idx
                 
-        self.action_scale = config.get('action_scale',1)
+        self.action_scale = config.get('action_scale',1.0)
         self.test_action_scale = config.get('test_action_scale',self.action_scale)
 
         self.model_type = config['model_type']
@@ -182,12 +182,11 @@ class EnvBase(gym.Env):
             output = self.model.rl_step(condition, action, extra_info)
             
         if self.is_rendered:
-            pass
-            #self.record_motion_seq[:,self.record_timestep,:]= output.cpu().detach().numpy()
-            #self.record_timestep += 1
-            #if self.record_timestep % 90 == 0 and self.record_timestep != 0:
-            #    pass
-                #self.save_motion()
+            
+            self.record_motion_seq[:,self.record_timestep,:]= output.cpu().detach().numpy()
+            self.record_timestep += 1
+            if self.record_timestep % 90 == 0 and self.record_timestep != 0:
+                self.save_motion()
             
         return output
 
@@ -226,7 +225,7 @@ class EnvBase(gym.Env):
         #ensor([[537085]]) ==================
         #tensor([[2122372]]) ==================
         
-        start_index = torch.randint(0,num_frame_used-1,(num_init,1))#2122372 #torch.randint(0,num_frame_used-1,(num_init,1)) 
+        start_index = 1000 #torch.randint(0,num_frame_used-1,(num_init,1))#2122372 #torch.randint(0,num_frame_used-1,(num_init,1)) 
         start_index = self.valid_idx[start_index]
 
         data = torch.tensor(self.dataset.motion_flattened[start_index])

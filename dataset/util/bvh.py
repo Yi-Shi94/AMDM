@@ -262,7 +262,6 @@ def output_as_bvh(file_path, root_xyz, joint_rot_eulers, joint_rot_order, joint_
     else:
         raise NotImplementedError
     
-    print(file_path)
     if osp.exists(file_path):
         os.remove(file_path)
     out_file = open(file_path,'w+')

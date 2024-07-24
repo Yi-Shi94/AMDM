@@ -1,6 +1,7 @@
 --env_config config/envs/inpaint_lafan1.yaml
---model_config config/model/amdm_lafan1_subj5.yaml
+--model_config output/base/amdm_lafan1_25s_eps/config.yaml
 --model_path output/base/amdm_lafan1_25s_eps/model_param.pth
+--int_output_dir output/base/amdm_lafan1_small3/
 
 --device cuda:0
 --master_port 0

@@ -9,10 +9,6 @@ import dataset.util.unit as unit_util
 import dataset.util.geo as geo_util
 import dataset.util.plot as plot_util
 import os.path as osp
-import random
-import tqdm
-import torch
-import torch.optim as optim
 
 class STYLE100(base_dataset.BaseMotionData):
     NAME = 'STYLE100'
@@ -89,7 +85,7 @@ class STYLE100(base_dataset.BaseMotionData):
         return motion
     
     def plot_jnts(self, x, path=None):
-        return plot_util.plot_multiple(x, self.links, plot_util.plot_style100, self.fps, path)
+        return plot_util.plot_multiple(x, self.links, plot_util.plot_lafan1, self.fps, path)
     
     def plot_traj(self, x, path=None):
         return plot_util.plot_traj_lafan1(x, path)

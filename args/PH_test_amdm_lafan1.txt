@@ -1,11 +1,11 @@
 
---model_config output/base/amdm_lafan1_25s_eps/config.txt
+--model_config output/base/amdm_lafan1_25s_eps/config.yaml
 --model_path output/base/amdm_lafan1_25s_eps/model_param.pth
 
-
---env_config output/path/amdm_lafan1_25s_eps/path_amdm.yaml
---agent_config output/path/amdm_lafan1_25s_eps/ppo.yaml
---controller_path output/path/amdm_lafan1_25s_eps/policy_model.pth
+--int_output_dir output/path/amdm_lafan1_25s_eps1/
+--env_config output/path/amdm_lafan1_25s_eps1/path_amdm.yaml
+--agent_config output/path/amdm_lafan1_25s_eps1/ppo.yaml
+--controller_path output/path/amdm_lafan1_25s_eps1/policy_model.pth
 
 --device cuda:0
 --mode test

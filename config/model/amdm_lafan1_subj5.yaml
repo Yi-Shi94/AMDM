@@ -41,9 +41,10 @@ optimizer:
         ema_update_rate: 1
 
 data:   
+    make_npz: False 
     dataset_name: "LAFAN1_hetero"
     path: "data/LAFAN1_tpose"
-    data_fps: 60
+    data_fps: 30
     data_trim_begin: 0
     data_trim_end: -1
     min_motion_len: 0

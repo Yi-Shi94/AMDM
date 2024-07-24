@@ -32,12 +32,10 @@ class BaseMotionData(data.Dataset):
         self.root_idx = self.skel_info.get("root_idx",None)
         self.foot_idx = self.skel_info.get('foot_idx',None)
         self.toe_idx = self.skel_info.get('toe_idx',None)
-
-        self.rotate_order = self.skel_info.get('euler_rotate_order',None)
-
         self.unit = self.skel_info.get('unit',None)
-        self.fps = self.skel_info.get('fps',None)
-        
+        self.rotate_order = self.skel_info.get('euler_rotate_order',None)
+        self.fps = config["data"]["data_fps"]
+
         self.load_cache = config["data"].get('load_cache',True)
         self.path = config["data"]["path"]
         self.min_motion_len = config["data"]["min_motion_len"]
@@ -67,7 +65,6 @@ class BaseMotionData(data.Dataset):
         #self.data_format = config["data"].get("data_format",["dxdyda","position","velocity","angle"])
         self.data_component = config["data"]["data_component"] #,["position","velocity","angle"])
         
-        print(self.data_component, osp.join(self.path,'data.npz'))
         self.use_offset = True if "offset" in self.data_component else False 
         self.num_file = 0
         self.file_lst = []
@@ -108,7 +105,7 @@ class BaseMotionData(data.Dataset):
           
         else:
             file_paths = self.get_motion_fpaths()
-            print(file_paths)
+            
             self.total_len = 0
             self.motion_struct = None
             
@@ -148,7 +145,6 @@ class BaseMotionData(data.Dataset):
 
 
             self.joint_offset = np.array(self.joint_offset)
-            #self.valid_idx = np.array(self.valid_idx)
             self.valid_range = np.array(self.valid_range)
             
 
@@ -306,36 +302,7 @@ class BaseMotionData(data.Dataset):
     def get_height(self,data):
         return data[:, self.height_index]
 
-    #@staticmethod
-    """ def get_heading_dr(data):
-        if __class__.data_root_rot_dim > 1:
-            heading_rot = data[:, __class__.data_root_linear_dim: __class__.data_root_linear_dim + __class__.data_root_rot_dim]
-            heading_rot = __class__.from_rpr_to_rotmat(heading_rot)
-            global_heading = torch.arctan2(heading_rot[:,0,2], heading_rot[:, 2,2]) 
-        else:
-            global_heading = data[:, __class__.data_root_linear_dim]
-        return global_heading 
-
-    @staticmethod
-    def get_heading_dr_mat(data):
-        if __class__.data_root_rot_dim > 1:
-            heading_rot = data[:, __class__.data_root_linear_dim: __class__.data_root_linear_dim + __class__.data_root_rot_dim]
-            heading_rot = __class__.from_rpr_to_rotmat(heading_rot)
-        else:
-            heading_angle = data[:, __class__.data_root_linear_dim]
-            heading_rot = geo_util.rot_yaw(heading_angle)
-        return heading_rot
-    
-    @staticmethod
-    def get_heading_from_val(data):
-        if __class__.data_root_rot_dim > 1:
-            heading_rot = geo_util.yaw_to_matrix(data)
-            m6d = geo_util.rotation_matrix_to_6d(heading_rot)
-            rpr = __class__.from_6d_to_rpr(m6d)
-        else:
-            rpr = data
-        return torch.tensor(rpr)
-    """
+   
     def read_label_data(self, path):
         if self.use_cond:
             raise NotImplementedError("read_label_data: not implemented!")
@@ -536,53 +503,6 @@ class BaseMotionData(data.Dataset):
         return joint_positions
 
 
-    def ik_seq_slow(self, init_frame, frames, max_iter=1000, tol_change=0.000001, device = 'cuda:0'):        
-        init_rotation = init_frame[..., self.angle_dim_lst[0]:self.angle_dim_lst[1]]
-        frames = copy.deepcopy(frames)
-        positions = frames[..., self.joint_dim_lst[0]:self.joint_dim_lst[1]]
-        positions = positions.reshape((-1, self.num_jnt, 3))
-        positions[...,1] -= frames[...,None,self.height_index]
-
-        last_rotation = init_rotation.reshape(-1, self.num_jnt, self.data_rot_dim)
-        rotations = np.zeros((frames.shape[0], self.num_jnt, self.data_rot_dim))
-
-        for i in tqdm.tqdm(range(positions.shape[0])):
-            cur_rotation = self.ik_frame_slow(last_rotation, positions[i], max_iter, tol_change, device)
-            last_rotation = copy.deepcopy(cur_rotation)
-            rotations[i] = last_rotation
-        return rotations
-
-
-    def ik_frame_slow(self, last_rotation, current_positions, max_iter, tol_change, device):
-        #last_rotation (num_joint * 6) 
-        #current_positions (num_joint * 3)
-        torch.autograd.set_detect_anomaly(True)
-        last_rotation = torch.tensor(last_rotation, requires_grad=False, device=device).float()
-        drot = torch.zeros(*last_rotation.shape, requires_grad=True, device= device).float()
-        current_positions = torch.tensor(current_positions, requires_grad=False, device=device).float()
-        optimizer = optim.LBFGS([drot], 
-                        max_iter=max_iter, 
-                        tolerance_change=tol_change,
-                        line_search_fn="strong_wolfe")
-
-        def f_loss(drot):        
-            fk_joint_positions = self.fk_local_rot_pt(last_rotation + drot)
-            loss = torch.nn.functional.mse_loss(fk_joint_positions, current_positions)
-            print(loss)
-            return loss
-        
-        def closure():
-            optimizer.zero_grad()
-            objective = f_loss(drot)
-            objective.backward()
-            return objective
-
-        optimizer.step(closure)
-        cur_rotation = last_rotation + drot
-        drot = drot.cpu().detach().numpy()
-        return cur_rotation.cpu().detach().numpy()
-
-
     def fk_local_rot_pt(self, rotation_rpr):
         joint_orientations = torch.zeros((self.num_jnt, 3, 3), device=rotation_rpr.device, dtype=rotation_rpr.dtype)
         joint_positions = torch.zeros((self.num_jnt, 3), device=rotation_rpr.device, dtype=rotation_rpr.dtype)
@@ -602,7 +522,6 @@ class BaseMotionData(data.Dataset):
     def fk_local_seq(self, frames):
         dtype = frames.dtype
         num_frames = len(frames)
-        #print(self.angle_dim_lst, self.use_offset)
         ang_frames = frames[:,self.angle_dim_lst[0]:self.angle_dim_lst[1]]
         joint_positions = np.zeros((num_frames, self.num_jnt, 3), dtype=dtype)
         joint_orientations = np.zeros((num_frames, self.num_jnt, 3, 3), dtype=dtype)
@@ -669,7 +588,7 @@ class BaseMotionData(data.Dataset):
         #root_rotmat_no_heading = torch.tensor(root_rotmat_no_heading)
         if mode == 'position':
             rotation_0 = x[0, self.angle_dim_lst[0]:self.angle_dim_lst[1]]
-            rotation = self.ik_seq_slow(x[0], x[1:])
+            rotation = self.ik_seq(x[0], x[1:])
             rotation_0 = rotation_0.reshape((-1, self.num_jnt, self.data_rot_dim))
             rotation = np.concatenate([rotation_0, rotation], axis = 0)
         
@@ -681,7 +600,7 @@ class BaseMotionData(data.Dataset):
             rotation_0 = x[0, self.angle_dim_lst[0]:self.angle_dim_lst[1]]
             jnts = self.vel_step_seq(x)
             x[...,self.joint_dim_lst[0]:self.joint_dim_lst[1]] = jnts.view(x.shape[0],-1)
-            rotation = self.ik_seq_slow(x[0],x[1:])
+            rotation = self.ik_seq(x[0],x[1:])
             rotation = np.concatenate([rotation_0, rotation], axis = 0)
 
         rotation = self.from_rpr_to_rotmat(torch.tensor(rotation)).cpu().numpy()

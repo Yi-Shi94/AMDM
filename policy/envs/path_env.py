@@ -37,13 +37,19 @@ class PathEnv(target_env.TargetEnv):
             self.viewer.add_path_markers(self.path)
 
 
-    def sample_random_traj_nodr(self, num_parallel=1):
+    def sample_random_traj_nodr(self, num_parallel=1, std_acc=0.004, max_speed=0.11, eps=1e-8):
         traj = torch.zeros(num_parallel,self.max_timestep,2)
         vel = torch.zeros(num_parallel,2)
         pos = torch.zeros(num_parallel,2)
         for i in range(self.max_timestep):
-            acc = torch.normal(mean=torch.zeros(num_parallel,2), std=torch.ones(num_parallel,2)*0.0022)
+            acc = torch.normal(mean=torch.zeros(num_parallel,2), std=torch.ones(num_parallel,2)*std_acc)
             vel += acc
+            
+            speed = torch.sqrt(torch.sum(vel*vel,dim=-1))
+           
+            speed_clamped = torch.clamp(speed, eps, max_speed)
+            vel = vel/speed*speed_clamped
+            
             pos += vel
             traj[:,i] = pos.clone()
         traj = traj.to(self.device)

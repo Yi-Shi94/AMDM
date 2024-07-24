@@ -1,11 +1,12 @@
 
---env_config output/joystick/amdm_lafan1_25s_eps/joystick_amdm.yaml
---model_config output/base/amdm_lafan1_25s_eps/config.txt
+
+--model_config output/base/amdm_lafan1_25s_eps/config.yaml
 --model_path output/base/amdm_lafan1_25s_eps/model_param.pth
 
---agent_config output/joystick/amdm_lafan1_25s_eps/ppo.yaml
-
---controller_path output/joystick/amdm_lafan1_25s_eps/policy_model.pth
+--agent_config output/joystick/amdm_lafan1_25s_eps1/ppo.yaml
+--int_output_dir output/joystick/amdm_lafan1_25s_eps1/
+--env_config output/joystick/amdm_lafan1_25s_eps1/joystick_amdm.yaml
+--controller_path output/joystick/amdm_lafan1_25s_eps1/policy_model.pth
 
 --device cuda:0
 --mode test

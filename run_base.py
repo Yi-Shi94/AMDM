@@ -10,6 +10,7 @@ import shutil
 import torch
 import numpy as np
 
+import dataset.dataset_builder as dataset_builder
 import model.model_builder as model_builder
 import model.trainer_builder as trainer_builder
 
@@ -53,6 +54,9 @@ def train(trainer, model, out_model_file, int_output_dir, log_file):
                       int_output_dir=int_output_dir, log_file=log_file)
     return
 
+def build_dataset(config, device):
+    dataset = dataset_builder.build_dataset(config, device)
+    return dataset
 
 def evaluate(trainer, model):
     result = trainer.evaluate_offline(model)
@@ -69,7 +73,7 @@ def create_output_dirs(out_model_file, int_output_dir):
     return
 
 def copy_config_file(config_file, output_dir):
-    out_file = os.path.join(output_dir, "config.txt")
+    out_file = os.path.join(output_dir, "config.yaml")
     shutil.copy(config_file, out_file)
     return
 
@@ -79,9 +83,10 @@ def run(rank, num_procs, args):
     log_file = args.parse_string("log_file", "")
     out_model_file = args.parse_string("out_model_file", "")
     trained_model_path = args.parse_string("model_path", "")
+    
     int_output_dir = args.parse_string("int_output_dir", "")
     master_port = args.parse_string("master_port", "")
-    model_file = args.parse_string("model_config", "")
+    model_config_file = args.parse_string("model_config", "")
 
     mp_util.init(rank, num_procs, device, master_port)
 
@@ -89,14 +94,22 @@ def run(rank, num_procs, args):
     create_output_dirs(out_model_file, int_output_dir)
     out_model_dir = os.path.dirname(out_model_file)
     
-    trainer = build_trainer(model_file, device)
-    model = build_model(model_file, trainer.dataset, device)
-
+    trainer = build_trainer(model_config_file, device)
+    model = build_model(model_config_file, trainer.dataset, device)
+    dataset = build_dataset(model_config_file, device)
     if (trained_model_path != ""):
-        model = torch.load(trained_model_path)
+        try:
+            model = model_builder.build_model(model_config_file, dataset, device)
+            state_dict = torch.load(trained_model_path)
+            model.load_state_dict(state_dict)
+        except:
+            model = torch.load(trained_model_path)
+        
+        model.to(device)
+        model.eval()
         
     if (mode == "train"):
-        copy_config_file(model_file, out_model_dir)
+        copy_config_file(model_config_file, out_model_dir)
         train(trainer, model, out_model_file=out_model_file, 
               int_output_dir=int_output_dir, log_file=log_file)
             

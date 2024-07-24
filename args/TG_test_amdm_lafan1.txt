@@ -1,4 +1,4 @@
---model_config output/base/amdm_lafan1_25s_eps/config.txt
+--model_config output/base/amdm_lafan1_25s_eps/config.yaml
 --model_path output/base/amdm_lafan1_25s_eps/model_param.pth
 
 --agent_config output/target/amdm_lafan1_25s_eps_no_greedy3/ppo.yaml

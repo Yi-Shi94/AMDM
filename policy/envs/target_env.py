@@ -144,7 +144,6 @@ class TargetEnv(base_env.EnvBase):
     
     def reset_target(self, indices=None, location=None):
         if location is None:
-            #print(self.target.device)
             if indices is None:
                 self.target[:, 0].uniform_(*self.arena_length) 
                 self.target[:, 1].uniform_(*self.arena_width)
@@ -163,7 +162,20 @@ class TargetEnv(base_env.EnvBase):
             self.target[:, 0] = location[0]
             self.target[:, 1] = location[1]
         
-      
+
+        targets_lst =torch.tensor([[-5.0,10.0],
+                      [ 5.0, 6.0],
+                      [ 2.0, 2.0],
+                      [1,1],[5,5],[1,1],[6,6],[0,0],[0,5], #], device=self.device)
+                      [ -12.2380, -5.6012],
+                      [-5.2380, -10],
+                      [3,-11],
+                      [5,-10],
+                      [10,5],
+                      [0,0]
+                      ]).to(self.device)
+        self.target = targets_lst[None,self.index_of_target] 
+
         if self.is_rendered:
             self.target_arr[...,self.index_of_target,:2] = self.target[:, :2]#.detach().cpu().numpy()
             self.target_arr[...,self.index_of_target,2] = self.timestep
@@ -196,13 +208,10 @@ class TargetEnv(base_env.EnvBase):
 
         self.integrate_root_translation(next_frame)
         progress = self.calc_progress_reward() 
-        #foot_slide_penalty = self.calc_foot_slide().sum(dim=-1)
        
         target_dist = -self.linear_potential
         target_is_close = target_dist < 0.4
         dist_reward = 2 * torch.exp(0.5 * self.linear_potential)
-        #progress = 15*torch.exp(-target_dist)
-        
         
         if is_external_step:
             self.reward.copy_(dist_reward)
@@ -210,20 +219,6 @@ class TargetEnv(base_env.EnvBase):
             self.reward.add_(dist_reward)
 
         self.reward.add_(target_is_close.float() * dist_reward)
-        #self.reward.add_(-foot_slide_penalty.sum().float()*0.0001)
-        #energy_penalty = self.calc_action_penalty_reward()
-        
-        #print(energy_penalty /(max(1,self.penalty_sat_step - self.timestep)), self.timestep)
-        #if w is not None:
-        
-            #self.reward.add_(-1*w.mean().item())
-
-        #print(self.reward.shape,next_frame.shape,next_frame[...,0].shape)
-        
-        #backward_penalty = -1.0*(next_frame[...,:1] > 0) 
-        #self.reward.add_(energy_penalty)
-        # action_penalty = self.calc_action_penalty()
-        # self.reward.add_(action_penalty)
         
         if target_is_close.any() and self.is_rendered:
             reset_indices = self.parallel_ind_buf.masked_select(

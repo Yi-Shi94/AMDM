@@ -5,33 +5,46 @@ diffusion:
     estimate_mode: "epsilon"
     loss_type: "l1"
     noise_schedule_mode: "cosine"
-    T: 18
+    T: 40
 
 model_hyperparam:
-    layer_num: 12
-    time_emb_size: 256 #time embediing
-    hidden_size: 1024 
+    layer_num: 20
+    #cond_mask_prob: 0
+    #cond_emb_size: 256 #condition frame for [class, text, etc]
+    time_emb_size: 128 #time embediing
+    hidden_size: 1024
     use_cond: False
     cond_num_cls: 0
+    norm_type: "group_norm"
+    act_type: "SiLU"
 
 optimizer:
-    anneal_times: 5
-    initial_lr: 0.0001
-    final_lr: 0.00001
-    teacher_epochs: 400
-    ramping_epochs: 200
-    student_epochs: 100
-    mini_batch_size: 2048
-    rollout: 2
-    EMA: 
-        ema_decay: 0.9999
+    consistency_on: False
+    consist_loss_weight: 0
+    anneal_times: 10
+    initial_lr: 0.00001
+    final_lr: 0.0000001
+    initial_teacher_epochs: 0
+    end_teacher_epochs: 10
+    teacher_epochs: 10
+    ramping_epochs: 0
+    student_epochs: 30
+    peak_student_rate: 1.0
+    mini_batch_size: 4096
+    full_T: False
+    rollout: 3
+    EMA:    
+        ema_decay: 0.99
         ema_start: 5000
         ema_update_rate: 1
 
+
 data:   
+    load_cache: True 
     dataset_name: "STYLE100"
-    path: "data/20STYLE"
+    path: "../AMDM-public/data/100STYLE/"
     dataset_class_name: "STYLE100"
+    data_fps: 60
     min_motion_len: 0
     max_motion_len: -1
     data_trim_begin: 0
@@ -41,7 +54,7 @@ data:
 
     
 test:
-    test_interval: 10
+    test_interval: 50
     test_num_steps: 60
-    test_num_trials: 8
+    test_num_trials: 4
     test_num_init_frame: 5

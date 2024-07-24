@@ -156,7 +156,7 @@ class PPOAgent(object):
                     value, action, action_log_prob = self.actor_critic.act(
                         self.rollouts.observations[step]
                     )
-                    
+                
                 obs, reward, done, info = self.env.step(action)
                 ep_reward += reward
 
@@ -243,6 +243,7 @@ class PPOAgent(object):
                         adv_targ,
                     ) = sample
 
+                #print(actions_batch.shape, observations_batch.shape)
                 values, action_log_probs, dist_entropy = self.actor_critic.evaluate_actions(
                     observations_batch, actions_batch
                 )

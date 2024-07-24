@@ -3,11 +3,11 @@ import glob
 
 import os.path as osp
 import os
-interval = 10
-start_frame = 56
-end_frame = -1 
-path = '/home/sy/repo/AMDM-public/output/inpaint/used_in_video_singe_inbet.bvh'
-out_path = '/home/sy/repo/AMDM-public/output/inpaint/used_in_video_singe_inbet/'
+interval = 20
+start_frame = 0
+end_frame = 300
+path = '/home/sy/repo/AMDM/output/base/amdm_lafan1_25s_eps/12300_500step_intro/1.bvh'
+out_path = '/home/sy/repo/AMDM/output/base/amdm_lafan1_25s_eps/12300_500step_intro/1/'
 os.makedirs(out_path,exist_ok=True)
 bvh_f = open(path,'r')
 lines = bvh_f.readlines()
@@ -28,6 +28,10 @@ for i, line in enumerate(lines):
         if pre_flag:
             pre.append(line)
         else:
+            if count > end_frame:
+                break
+            if count < start_frame:
+                continue
             if count % interval == 0:
                 record_line = line
                 out_name = osp.join(out_path,str(count)+'.bvh')
@@ -42,9 +46,9 @@ for i, line in enumerate(lines):
 bvh_f.close()
 
 # Paths to the files
-fbx_filepath = glob.glob('/home/sy/SkinMesh_Zero.fbx')
-bvh_filepaths = glob.glob('/home/sy/repo/AMDM-public/output/inpaint/used_in_video_singe_inbet/*.bvh')
+#fbx_filepath = glob.glob('/home/sy/SkinMesh_Zero.fbx')
+bvh_filepaths = glob.glob(out_path +'/*.bvh')
 
 for path in bvh_filepaths:
     bpy.ops.import_anim.bvh(filepath=path)
-    bpy.ops.import_scene.fbx(filepath=fbx_filepath[0])
+    #bpy.ops.import_scene.fbx(filepath=fbx_filepath[0])
