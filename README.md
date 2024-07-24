@@ -11,12 +11,12 @@ We implemented a PyTorch framework for kinematic-based auto-regressive models. O
 ## Dataset Preparation
 ### LaFAN1:
 [Download](https://github.com/ubisoft/ubisoft-laforge-animation-dataset)
-Download and extract under ./data/
-If you want to use another directory, change it in config/model/XXX.yaml data setting
+and extract under ./data/
+If you want to use another directory, change the path in config/model/amdm_lafan1.yaml data setting
 ### 100STYLE:
 [Download](https://www.ianxmason.com/100style/)
-Download and extract under ./data/
-If you want to use another directory, change it in config/model/XXX.yaml data setting
+and extract under ./data/
+If you want to use another directory, change the path in config/model/amdm_style100.yaml data setting
 
 ### AMASS:
 Follow the procedure described in the repo of [HuMoR](https://github.com/davrempe/humor)
