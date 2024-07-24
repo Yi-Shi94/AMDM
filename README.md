@@ -5,7 +5,7 @@
 </p>
 
 ## Implementation of Auto-regressive Motion Diffusion Model (A-MDM)
-We implemented a PyTorch framework for kinematic-based auto-regressive models. Our framework supports training and inference for A-MDM models. Additionally, it offers real-time inpainting and reinforcement learning-based interactive control tasks. We also provide tools for BVH output and ONNX export.
+We implemented a PyTorch framework for kinematic-based auto-regressive models. Our framework supports training and inference for A-MDM. Additionally, it offers real-time inpainting and reinforcement learning-based interactive control tasks. We also provide tools for BVH output and ONNX export.
 
 
 ## Dataset Preparation
