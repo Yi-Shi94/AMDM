@@ -1,7 +1,7 @@
 --env_config config/envs/randomplay.yaml
---model_config output/base/amdm_lafan1_25s_eps/config.yaml
---model_path output/base/amdm_lafan1_small3/model_param.pth
---int_output_dir output/base/amdm_lafan1_small3/
+--model_config output/base/amdm_lafan1/config.yaml
+--model_path output/base/amdm_lafan1/model_param.pth
+--int_output_dir output/base/amdm_lafan1/
 
 --device cuda:0
 --master_port 0
