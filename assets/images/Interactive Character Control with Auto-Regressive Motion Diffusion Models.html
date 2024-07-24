@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<!-- saved from url=(0049)https://xbpeng.github.io/projects/AMDM/index.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+			<title>Interactive Character Control with Auto-Regressive Motion Diffusion Models</title>
+			<!-- link to main stylesheet -->
+			<link rel="stylesheet" type="text/css" href="./Interactive Character Control with Auto-Regressive Motion Diffusion Models_files/main.css">
+		<script async="" src="./Interactive Character Control with Auto-Regressive Motion Diffusion Models_files/analytics.js"></script><script async="" src="./Interactive Character Control with Auto-Regressive Motion Diffusion Models_files/js"></script><script>
+		  window.dataLayer = window.dataLayer || [];
+		  function gtag(){dataLayer.push(arguments);}
+		  gtag('js', new Date());
+
+		  gtag('config', 'G-H77JS1DFCE');
+		</script><script charset="utf-8" src="./Interactive Character Control with Auto-Regressive Motion Diffusion Models_files/button.856debeac157d9669cf51e73a08fbc93.js"></script></head>
+		
+		<!-- Google tag (gtag.js) -->
+		
+		
+		
+		<body data-new-gr-c-s-check-loaded="14.1189.0" data-gr-ext-installed="">
+			<nav>
+	    		<ul>
+	        		<li><a href="https://xbpeng.github.io/">Home</a></li>
+	        		<li><a href="https://xbpeng.github.io/docs/jason_peng_cv.pdf">CV</a></li>
+	        		<li><a href="https://xbpeng.github.io/art">Art</a></li>
+					<li><iframe id="twitter-widget-0" scrolling="no" frameborder="0" allowtransparency="true" allowfullscreen="true" class="twitter-follow-button twitter-follow-button-rendered" style="position: static; visibility: visible; width: 76px; height: 20px;" title="Twitter Follow Button" src="./Interactive Character Control with Auto-Regressive Motion Diffusion Models_files/follow_button.2f70fb173b9000da126c79afe2098f02.en.html" data-screen-name="xbpeng4"></iframe><script async="" src="./Interactive Character Control with Auto-Regressive Motion Diffusion Models_files/widgets.js" charset="utf-8"></script></li>
+	    		</ul>
+			</nav>
+			<div class="container">
+			
+			<center><h1>Interactive Character Control with Auto-Regressive Motion Diffusion Models</h1></center>
+
+
+	<center>
+		ACM Transactions on Graphics (Proc. SIGGRAPH 2024)<br>
+		<br>
+		<nobr>Yi Shi (1, 2), Jingbo Wang (2), Xuekun Jiang (2), Bingkun Lin (3), Bo Dai (2), Xue Bin Peng (1, 4)</nobr> <br>
+		<br>
+		<nobr>(1) Simon Fraser University</nobr>    <nobr>(2) Shanghai AI Lab</nobr>    <nobr>(3) Xmov</nobr>    <nobr>(4) NVIDIA </nobr><br>
+		<br>
+		<img style="vertical-align:middle" src="./Interactive Character Control with Auto-Regressive Motion Diffusion Models_files/AMDM_teaser.png" width="100%" height="inherit">		
+	</center>
+
+
+<br>
+	
+
+	<hr>
+	<h3 style="margin-bottom:10px;">Abstract</h3>
+	Real-time character control is an essential component for interactive experiences,
+	with a broad range of applications, including physics simulations,
+	video games, and virtual reality. The success of diffusion models for image
+	synthesis has led to the use of these models for motion synthesis. However,
+	the majority of these motion diffusion models are primarily designed for
+	offline applications, where space-time models are used to synthesize an
+	entire sequence of frames simultaneously with a pre-specified length. To
+	enable real-time motion synthesis with diffusion model that allows timevarying
+	controls, we propose A-MDM (Auto-regressive Motion Diffusion
+	Model). Our conditional diffusion model takes an initial pose as input, and
+	auto-regressively generates successive motion frames conditioned on the
+	previous frame. Despite its streamlined network architecture, which uses
+	simple MLPs, our framework is capable of generating diverse, long-horizon,
+	and high-fidelity motion sequences. Furthermore, we introduce a suite of
+	techniques for incorporating interactive controls into A-MDM, such as taskoriented
+	sampling, in-painting, and hierarchical reinforcement learning (See
+	Figure 1). These techniques enable a pre-trained A-MDM to be efficiently
+	adapted for a variety of new downstream tasks. We conduct a comprehensive
+	suite of experiments to demonstrate the effectiveness of A-MDM, and
+	compare its performance against state-of-the-art auto-regressive methods.
+
+
+
+	<h3> Paper: [<a href="https://xbpeng.github.io/projects/AMDM/AMDM_2024.pdf">PDF</a>] &nbsp; &nbsp; &nbsp; Webpage: [<a href="https://yi-shi94.github.io/amdm_page/">Link</a>] &nbsp; &nbsp; &nbsp; Preprint: [<a href="https://arxiv.org/abs/2306.00416">arXiv</a>]</h3>
+
+
+
+		<h3 style="margin-bottom:10px;">Video</h3>
+		<iframe width="560" height="315" src="./Interactive Character Control with Auto-Regressive Motion Diffusion Models_files/5WE9hy0xCI4.html" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen=""></iframe>
+
+	
+<br>
+<br>
+
+<h3 style="margin-bottom:0px;">Bibtex</h3>
+<pre>@article{
+        shi2024amdm,
+        author = {Shi, Yi and Wang, Jingbo and Jiang, Xuekun and Lin, Bingkun and Dai, Bo and Peng, Xue Bin},
+        title = {Interactive Character Control with Auto-Regressive Motion Diffusion Models},
+        year = {2024},
+        issue_date = {August 2024},
+        publisher = {Association for Computing Machinery},
+        address = {New York, NY, USA},
+        volume = {43},
+        journal = {ACM Trans. Graph.},
+        month = {jul},
+        keywords = {motion synthesis, diffusion model, reinforcement learning}
+}
+</pre>
+
+			
+			</div><!-- /.container -->
+		
+		
+		<script>
+			  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+			  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+			  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+			  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+			  ga('create', 'UA-89363010-1', 'auto');
+			  ga('send', 'pageview');
+		</script>
+		
+		<footer>
+	    	<ul>
+				<li><a href="mailto:xbpeng@sfu.ca">email</a></li>
+	        	<li><a href="https://github.com/xbpeng">github.com/xbpeng</a></li>
+			</ul>
+		</footer>
+	
+<iframe scrolling="no" frameborder="0" allowtransparency="true" src="./Interactive Character Control with Auto-Regressive Motion Diffusion Models_files/widget_iframe.2f70fb173b9000da126c79afe2098f02.html" title="Twitter settings iframe" style="display: none;"></iframe><iframe frameborder="0" scrolling="no" style="background-color: transparent; border: 0px; display: none;" src="./Interactive Character Control with Auto-Regressive Motion Diffusion Models_files/saved_resource.html"></iframe><div id="GOOGLE_INPUT_CHEXT_FLAG" input="" input_stat="{&quot;tlang&quot;:true,&quot;tsbc&quot;:true,&quot;pun&quot;:true,&quot;mk&quot;:true,&quot;ss&quot;:true}" style="display: none;"></div><iframe id="rufous-sandbox" scrolling="no" frameborder="0" allowtransparency="true" allowfullscreen="true" style="position: absolute; visibility: hidden; display: none; width: 0px; height: 0px; padding: 0px; border: none;" title="Twitter analytics iframe" src="./Interactive Character Control with Auto-Regressive Motion Diffusion Models_files/saved_resource(1).html"></iframe></body><grammarly-desktop-integration data-grammarly-shadow-root="true"><template shadowrootmode="open"><style>
+      div.grammarly-desktop-integration {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select:none;
+        user-select:none;
+      }
+
+      div.grammarly-desktop-integration:before {
+        content: attr(data-content);
+      }
+    </style><div aria-label="grammarly-integration" role="group" tabindex="-1" class="grammarly-desktop-integration" data-content="{&quot;mode&quot;:&quot;full&quot;,&quot;isActive&quot;:true,&quot;isUserDisabled&quot;:false}"></div></template></grammarly-desktop-integration></html>
