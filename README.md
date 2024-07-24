@@ -1,7 +1,7 @@
 # <p align="center"> Interactive Character Control with Auto-Regressive Motion Diffusion Models </p>
 ### <p align="center"> [Yi Shi](https://github.com/Yi-Shi94/), [Jingbo Wang](https://wangjingbo1219.github.io/), [Xuekun Jiang](), [Bingkun Lin](), [Bo Dai](https://daibo.info/), [Xue Bin Peng](https://xbpeng.github.io/) </p>
 <p align="center">
-  <img width="40%" src="assets/image/AMDM_teaser.png"/>
+  <img width="40%" src="assets/images/AMDM_teaser.png"/>
 </p>
 ## Implementation of Auto-regressive Motion Diffusion Model (A-MDM)
 We implement a pytorch framework for kinematic based auto-regressive models. To use our framework, follow the instruction below:
@@ -10,9 +10,14 @@ We implement a pytorch framework for kinematic based auto-regressive models. To 
 ### Base Model
 
 #### Training
-
+LaFAN1:
+python run_base.py --arg_file args/amdm_lafan1_train.txt
+100STYLE:
+python run_base.py --arg_file args/amdm_style100_train.txt
 
 #### Inference
+
+
 
 ### High-Level Controller
 
