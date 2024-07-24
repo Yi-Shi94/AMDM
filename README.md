@@ -5,27 +5,43 @@
 </p>
 
 ## Implementation of Auto-regressive Motion Diffusion Model (A-MDM)
-We implement a pytorch framework for kinematic based auto-regressive models. To use our framework, follow the instruction below:
+We implemented a PyTorch framework for kinematic-based auto-regressive models. Our framework supports training and inference for A-MDM models. Additionally, it offers real-time inpainting and reinforcement learning-based interactive control tasks. We also provide tools for BVH output and ONNX export.
 
 ## Usage
+### Dataset Preparation
+#### LaFAN1:
+
+#### 100STYLE:
+
+#### AMASS:
+
+#### HumanML3D:
+
+
 ### Base Model
 
 #### Training
-LaFAN1:
+##### LaFAN1:
 ```
 python run_base.py --arg_file args/amdm_lafan1_train.txt
 ```
-100STYLE:
+##### 100STYLE:
 ```
 python run_base.py --arg_file args/amdm_style100_train.txt
 ```
+##### Other Dataset:
+Create a data folder, change directory in config/models/CONFIG.yaml
+If not exist a dataset class for your dataset, you should implement your own dataset class' 
+````
+python run_base.py --arg_file args/amdm_DATASET_train.txt
+````
 
 #### Inference
-LaFAN1:
+##### LaFAN1:
 ```
 python run_env.py --arg_file args/RP_amdm_lafan1.txt
 ```
-100STYLE:
+##### 100STYLE:
 ```
 python run_env.py --arg_file args/RP_amdm_style100.txt
 ```
@@ -44,7 +60,7 @@ python run_env.py --arg_file args/RP_amdm_style100.txt
 
 
 ## Acknowledgement
-The RL modules are built using existing code base of [MotionVAE](https://github.com/electronicarts/character-motion-vaes)
+The RL related modules are built using existing code base of [MotionVAE](https://github.com/electronicarts/character-motion-vaes)
 
 
 ## BibTex
