@@ -1,12 +1,12 @@
 
 
---model_config output/base/amdm_lafan1_25s_eps/config.txt
---model_path output/base/amdm_lafan1_25s_eps/model_param.pth
+--model_config output/base/amdm_lafan1/config.txt
+--model_path output/base/amdm_lafan1/model_param.pth
 --agent_config config/agents/ppo.yaml
 
 --env_config  config/envs/target_amdm.yaml
---int_output_dir output/target/amdm_lafan1_25s_eps_no_greedy3/
---out_model_file output/target/amdm_lafan1_25s_eps_no_greedy3/policy_model.pth
+--int_output_dir output/target/amdm_lafan1/
+--out_model_file output/target/amdm_lafan1/policy_model.pth
 
 
 --device cuda:0

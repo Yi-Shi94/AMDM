@@ -18,7 +18,7 @@ model_hyperparam:
     use_cond: False
     cond_num_cls: 0
     norm_type: "group_norm"
-    act_type: "ReLU"
+    act_type: "SiLU"
 
 optimizer:
     consistency_on: False
@@ -42,7 +42,7 @@ optimizer:
 
 data:   
     make_npz: False 
-    dataset_name: "LAFAN1_hetero"
+    dataset_name: "LAFAN1"
     path: "data/LAFAN1_tpose"
     data_fps: 30
     data_trim_begin: 0

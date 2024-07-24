@@ -3,9 +3,7 @@ import policy.envs.base_env as base_env
 from render.realtime.mocap_renderer import PBLMocapViewer
 import torch
 import numpy as np
-import tkinter as tk
 import gymnasium as gym
-from multiprocessing import Process
 
 class RandomPlayEnv(base_env.EnvBase):
     NAME = "RandomPlay"
@@ -46,7 +44,7 @@ class RandomPlayEnv(base_env.EnvBase):
             self.device
         )
 
-        if 'file_name' in config:
+        if 'file_name' in config and config['file_name'] != '':
             file_idx = dataset.get_motion_fpaths().index(config['file_name'])
         else:
             file_idx = torch.randint(0, len(self.valid_range)-1, (self.num_parallel, 1))
@@ -58,15 +56,14 @@ class RandomPlayEnv(base_env.EnvBase):
 
         self.clip_timestep =self.timestep_start
 
-        if 'st_frame_idx' in config and 'file_name' in config:
-            self.init_frame_idx = min(self.timestep_start + config['st_frame_idx'], self.timestep_end)
-        elif  'st_frame_idx' in config:
-            self.init_frame_idx = config['st_frame_idx']
+        if 'st_frame_index' in config and 'file_name' in config :
+            self.init_frame_idx = min(self.timestep_start + config['st_frame_index'], self.timestep_end)
+        elif  'st_frame_index' in config:
+            self.init_frame_idx = config['st_frame_index']
         else:
             self.init_frame_idx = torch.randint(self.timestep_start, self.timestep_end-1, (self.num_parallel, 1))
 
 
-        #self.init_frame_idx = config.get('st_frame_index',5000)
         self.reward = torch.zeros((self.num_parallel, 1)).to(self.device)
         self.root_facing = torch.zeros((self.num_parallel, 1)).to(self.device)
         self.root_xz = torch.zeros((self.num_parallel, 2)).to(self.device)
