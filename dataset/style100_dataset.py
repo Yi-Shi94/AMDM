@@ -73,7 +73,7 @@ class STYLE100(base_dataset.BaseMotionData):
         else: 
             frame_start, frame_end = self.data_trim_begin, self.data_trim_end
         
-        final_x, motion_struct = bvh_util.read_bvh_loco(fname, self.unit, self.fps)
+        final_x, motion_struct = bvh_util.read_bvh_loco(fname, self.unit, self.fps, self.root_rot_offset)
         return final_x, motion_struct
 
     def __len__(self):

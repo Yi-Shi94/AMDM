@@ -23,14 +23,14 @@ model_hyperparam:
 optimizer:
     consistency_on: False
     consist_loss_weight: 0
-    anneal_times: 80
-    initial_lr: 0.00000005
-    final_lr: 0.00000001
+    anneal_times: 50
+    initial_lr: 0.0005
+    final_lr: 0.00001
     initial_teacher_epochs: 2000
-    end_teacher_epochs: 200
-    teacher_epochs: 90
+    end_teacher_epochs: 300
+    teacher_epochs: 85
     ramping_epochs: 0
-    student_epochs: 10
+    student_epochs: 15
     peak_student_rate: 1.0
     mini_batch_size: 2048
     full_T: False
@@ -44,6 +44,8 @@ data:
     make_npz: False 
     dataset_name: "LAFAN1"
     path: "data/LAFAN1_tpose"
+    
+    root_rot_offset: -90 #degree
     data_fps: 30
     data_trim_begin: 0
     data_trim_end: -1

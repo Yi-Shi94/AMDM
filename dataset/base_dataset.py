@@ -35,7 +35,8 @@ class BaseMotionData(data.Dataset):
         self.unit = self.skel_info.get('unit',None)
         self.rotate_order = self.skel_info.get('euler_rotate_order',None)
         self.fps = config["data"]["data_fps"]
-
+        
+        self.root_rot_offset = config["data"]["root_rot_offset"]
         self.load_cache = config["data"].get('load_cache',True)
         self.path = config["data"]["path"]
         self.min_motion_len = config["data"]["min_motion_len"]
@@ -147,7 +148,6 @@ class BaseMotionData(data.Dataset):
             self.joint_offset = np.array(self.joint_offset)
             self.valid_range = np.array(self.valid_range)
             
-
             self.motion_flattened, self.normalization = self.create_norm(self.motion_flattened, 'zscore')
             self.std = self.normalization['std']
             self.avg = self.normalization['avg']
@@ -457,7 +457,7 @@ class BaseMotionData(data.Dataset):
             rt = self.offset_dim_lst
         return rt
     
-    def unify_rpr_within_frame(self, last_frame, frame):
+    def sync_rpr_within_frame(self, last_frame, frame):
         last_frame = self.denorm_data(last_frame, device=last_frame.device)
         frame = self.denorm_data(frame, device=frame.device)
         
@@ -617,7 +617,7 @@ class BaseMotionData(data.Dataset):
             dr, _ = geo_util.sepr_rot_heading(m6d)
         else:
             dr = x[...,self.data_root_linear_dim]
-
+            
         if mode == 'angle':
             jnts = self.fk_local_seq(x) 
         elif mode == 'position':

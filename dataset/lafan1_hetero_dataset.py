@@ -2,17 +2,12 @@ import copy
 import glob
 import os.path as osp
 import numpy as np
-import tqdm
-
 import torch
-import torch.optim as optim
 
-import dataset.base_dataset as base_dataset
 import dataset.lafan1_dataset as lafan1_dataset
 import dataset.util.bvh as bvh_util
 import dataset.util.geo as geo_util
 import dataset.util.plot as plot_util
-import dataset.util.unit as unit_util
 
 class LAFAN1_hetero(lafan1_dataset.LAFAN1):
     NAME = 'LAFAN1_hetero'
@@ -22,7 +17,7 @@ class LAFAN1_hetero(lafan1_dataset.LAFAN1):
     def process_data(self, fname):
         # read a single file, convert them into single format
         #if self.rpr_style == 'heterogeneous':
-        final_x, motion_struct = bvh_util.read_bvh_hetero(fname, self.unit, self.fps)
+        final_x, motion_struct = bvh_util.read_bvh_hetero(fname, self.unit, self.fps, self.root_rot_offset)
         # use file num as label
         if self.data_trim_begin:
             final_x = final_x[self.data_trim_begin:]
@@ -179,9 +174,7 @@ class LAFAN1_hetero(lafan1_dataset.LAFAN1):
 
             dpm += np.dot(cur_pos, cur_rot)
             rot_headings[i,:] = copy.deepcopy(cur_rot)
-            #jnts[i,:,:] = np.dot(jnts[i,:,:], geo_util.rot_yaw(yaws[i])) + copy.deepcopy(dpm)
             
-        #root_rotmat_no_heading = torch.tensor(root_rotmat_no_heading)
         if mode == 'position':
             rotation_0 = x[0, self.angle_dim_lst[0]:self.angle_dim_lst[1]]
             rotation = self.ik_seq_slow(x[0], x[1:])

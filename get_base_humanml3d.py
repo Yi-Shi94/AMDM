@@ -125,7 +125,7 @@ def renderf(input_npy, out_path, idx):
         
 if __name__ == "__main__":
    
-    model_path = 'output/base/amdm_humanml3d_contx2_large/'
+    model_path = 'output/base/amdm_humanml3d/'
     model_name = 'model.pt'
     start_index = 108991#170005 ##38044 ##10714 + 3186 #in humor unclear
     num_trial = 5

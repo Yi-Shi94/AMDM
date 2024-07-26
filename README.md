@@ -5,8 +5,7 @@
 </p>
 
 ## Implementation of Auto-regressive Motion Diffusion Model (A-MDM)
-We implemented a PyTorch framework for kinematic-based auto-regressive models. Our framework supports training and inference for A-MDM. Additionally, it offers real-time inpainting and reinforcement learning-based interactive control tasks. We also provide tools for BVH output and ONNX export.
-
+We implemented a PyTorch framework for kinematic-based auto-regressive models. Our framework supports training and inference for A-MDM. Additionally, it offers real-time inpainting and reinforcement learning-based interactive control tasks. 
 
 ## Dataset Preparation
 ### LaFAN1:
@@ -24,11 +23,10 @@ Follow the procedure described in the repo of [HuMoR](https://github.com/davremp
 ### HumanML3D:
 Follow the procedure described in the repo of [HumanML3D](https://github.com/EricGuo5513/HumanML3D.git) 
 
-### Customized Dataset:
-We support bvh at the moment, follow the procedure of LaFAN1
-
 ### Sanity Check:
-
+```
+python run_sanity_data.py
+```
 
 ## Base Model
 ### Training
@@ -36,22 +34,11 @@ We support bvh at the moment, follow the procedure of LaFAN1
 ```
 python run_base.py --arg_file args/amdm_lafan1_train.txt
 ```
-#### Other Dataset:
-Create a data folder, change directory in config/models/CONFIG.yaml
-If not exist a dataset class for your dataset, you should implement your own dataset class' 
-````
-python run_base.py --arg_file args/amdm_DATASET_train.txt
-````
 
 ### Inference
-#### LaFAN1:
 ```
-python run_env.py --arg_file args/RP_amdm_lafan1.txt
-```
-#### Other Dataset:
-````
 python run_env.py --arg_file args/RP_amdm_DATASET.txt
-````
+```
 
 #### Inpainting
 ```
@@ -70,18 +57,15 @@ python run_env.py --arg_file args/ENV_train_amdm_DATASET.txt
 python run_env.py --arg_file args/ENV_test_amdm_DATASET.txt
 ```
 
-### Checkpoint Download
+### Installation
+```
 
-(Download)[]
-
-
+```
 
 ## Acknowledgement
 The RL related modules are built using existing code base of [MotionVAE](https://github.com/electronicarts/character-motion-vaes)
 
-
 ## BibTex
-
 ```
 @article{
         shi2024amdm,

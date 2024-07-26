@@ -1,6 +1,6 @@
 
 
---model_config output/base/amdm_lafan1/config.txt
+--model_config output/base/amdm_lafan1/config.yaml
 --model_path output/base/amdm_lafan1/model_param.pth
 --agent_config config/agents/ppo.yaml
 

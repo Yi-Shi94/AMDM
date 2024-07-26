@@ -8,9 +8,10 @@ diffusion:
     T: 25
 
 model_hyperparam:
-    layer_num: 20
+    layer_num: 22
     #cond_mask_prob: 0
-    norm_type: "layer_norm"
+    norm_type: "group_norm"
+    act_type: "SiLU"
     #cond_emb_size: 256 #condition frame for [class, text, etc]
     time_emb_size: 256 #time embediing
     hidden_size: 1024 
@@ -21,9 +22,9 @@ optimizer:
     consistency_on: False
     consist_loss_weight: 0
     anneal_times: 2
-    initial_lr: 0.00001
-    final_lr: 0.0000001
-    initial_teacher_epochs: 0 
+    initial_lr: 0.001
+    final_lr: 0.000001
+    initial_teacher_epochs: 200 
     teacher_epochs: 0
     ramping_epochs: 0
     student_epochs: 280

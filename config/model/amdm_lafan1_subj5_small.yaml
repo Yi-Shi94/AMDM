@@ -24,7 +24,7 @@ optimizer:
     consist_loss_weight: 0
     anneal_times: 30
     initial_lr: 0.0001
-    final_lr: 0.00000001
+    final_lr: 0.000001
     initial_teacher_epochs: 3000
     end_teacher_epochs: 1000
     teacher_epochs: 50
@@ -40,7 +40,7 @@ optimizer:
         ema_update_rate: 1
 
 data:   
-    dataset_name: "LAFAN1"
+    dataset_name: "LAFAN1_hetero"
     path: "data/LAFAN1_tpose_dr_part"
     data_fps: 30
     data_trim_begin: 0

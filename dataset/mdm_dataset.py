@@ -1,26 +1,13 @@
 import torch
-from torch.utils import data
 import numpy as np
-import os
-from os.path import join as pjoin
-import random
-import codecs as cs
 from tqdm import tqdm
-import spacy
 import os.path as osp
-import glob
 
 import dataset.base_dataset as base_dataset
-import dataset.util.bvh as bvh_util
-import dataset.util.geo as geo_util
 import dataset.util.plot as plot_util
-import dataset.util.unit as unit_util
 
-from torch.utils.data._utils.collate import default_collate
-from dataset.util.humanml3d.common.quaternion import qinv, qrot
 from dataset.util.humanml3d.script.motion_process import recover_from_ric, extract_features
 from dataset.util.humanml3d.util.paramUtil import *
-from dataset.util.humanml3d.common.skeleton import Skeleton
 
 class HumanML3D(base_dataset.BaseMotionData):
     NAME = 'HumanML3D_ORG'
@@ -36,7 +23,6 @@ class HumanML3D(base_dataset.BaseMotionData):
 
         self.eval_valid_range = []
         self.test_data = self.load_new_dataset(self.test_split_file)
-        #self.test_data = self.load_new_dataset(self.test_split_file)
         
         self.test_valid_idx_full = []
         num = 0

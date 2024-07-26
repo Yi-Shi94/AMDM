@@ -15,7 +15,7 @@ class LAFAN1(base_dataset.BaseMotionData):
         
     def process_data(self, fname):
         # read a single file, convert them into single format
-        final_x, motion_struct = bvh_util.read_bvh_loco(fname, self.unit, self.fps)
+        final_x, motion_struct = bvh_util.read_bvh_loco(fname, self.unit, self.fps, self.root_rot_offset)
 
         # use file num as label
         if self.data_trim_begin:

@@ -121,17 +121,20 @@ def init_model(model_config_file, model_state_path, out_path, data_file_name, st
     dataset.plot_traj(np.array(all_seq_lst), osp.join(out_path,'traj.png'))
 
 if __name__ == '__main__':
-    data_file_name = '../AMDM-public/data/100STYLE/Depressed/Depressed_BW.bvh'
-    start_index = 322 # 38046  
+    #data_file_name = '../AMDM-public/data/100STYLE/Depressed/Depressed_BW.bvh'
+    #start_index = 322 #   
+    
+    data_file_name = '' 
+    start_index = 38046 #cartwheel
 
-    step_default = 300
+    step_default = 3000
     num_trial_default = 5
-    model_name = 'amdm_style100' #'amdm_lafan1_25s_eps'
+    model_name = 'amdm_lafan1' #'amdm_style100' #'amdm_lafan1_25s_eps'
 
     
     par_path = 'output/base/'
     model_config_file = '{}/{}/config.yaml'.format(par_path, model_name)
-    state_dict = torch.load('{}/{}/model_param.pth'.format(par_path,model_name))
+    state_dict = torch.load('{}/{}/_ep5050.pth'.format(par_path,model_name))
     out_path = '{}/{}/{}_{}step_intro'.format(par_path, model_name, start_index, step_default)  
 
     

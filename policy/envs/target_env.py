@@ -162,7 +162,7 @@ class TargetEnv(base_env.EnvBase):
             self.target[:, 0] = location[0]
             self.target[:, 1] = location[1]
         
-
+        """ 
         targets_lst =torch.tensor([[-5.0,10.0],
                       [ 5.0, 6.0],
                       [ 2.0, 2.0],
@@ -173,8 +173,10 @@ class TargetEnv(base_env.EnvBase):
                       [5,-10],
                       [10,5],
                       [0,0]
-                      ]).to(self.device)
-        self.target = targets_lst[None,self.index_of_target] 
+                      ]).to(self.device) 
+        self.target = targets_lst[None,self.index_of_target]               
+        """
+        
 
         if self.is_rendered:
             self.target_arr[...,self.index_of_target,:2] = self.target[:, :2]#.detach().cpu().numpy()
@@ -213,12 +215,9 @@ class TargetEnv(base_env.EnvBase):
         target_is_close = target_dist < 0.4
         dist_reward = 2 * torch.exp(0.5 * self.linear_potential)
         
-        if is_external_step:
-            self.reward.copy_(dist_reward)
-        else:
-            self.reward.add_(dist_reward)
-
-        self.reward.add_(target_is_close.float() * dist_reward)
+        self.reward.copy_(dist_reward)
+        
+        self.reward[target_is_close].copy_(5)
         
         if target_is_close.any() and self.is_rendered:
             reset_indices = self.parallel_ind_buf.masked_select(

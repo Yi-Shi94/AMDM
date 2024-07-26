@@ -1,6 +1,6 @@
 env_module: "policy.envs.target_env:TargetEnv"
 env_name: "TargetEnv"
-num_parallel: 1000
+num_parallel: 512
 num_parallel_test: 1
 
 max_timestep: 300

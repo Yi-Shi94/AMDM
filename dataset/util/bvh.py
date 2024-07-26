@@ -318,7 +318,7 @@ def output_as_bvh(file_path, root_xyz, joint_rot_eulers, joint_rot_order, joint_
 
 
 
-def read_bvh_loco(path, unit, target_fps, frame_start=None, frame_end=None):
+def read_bvh_loco(path, unit, target_fps, root_rot_offset=0, frame_start=None, frame_end=None):
     motion = import_bvh(path, end_eff=False)
     positions = motion._positions * unit_util.unit_conver_scale(unit) # (frames, joints, 3)
     rotations = motion._rotations #
@@ -347,9 +347,11 @@ def read_bvh_loco(path, unit, target_fps, frame_start=None, frame_end=None):
     positions[:,:,0] -= positions[:,0,:1]
     positions[:,:,2] -= positions[:,0,2:]
 
-    global_heading = - np.arctan2(rotations[:,root_idx,0,2], rotations[:, root_idx, 2,2]) 
+    global_heading = -np.arctan2(rotations[:,root_idx,0,2], rotations[:, root_idx, 2,2]) 
+    global_heading += root_rot_offset/180*np.pi
+
+    global_heading_diff = global_heading[1:] - global_heading[:-1]
     
-    global_heading_diff = global_heading[1:] - global_heading[:-1] #% (2*np.pi)
     global_heading_rot = np.array([geo_util.rot_yaw(x) for x in global_heading])
     #global_heading_rot_inv = global_heading_rot.transpose(0,2,1)
 
@@ -371,7 +373,7 @@ def read_bvh_loco(path, unit, target_fps, frame_start=None, frame_end=None):
     return final_x, motion
 
 
-def read_bvh_hetero(path, unit, target_fps, frame_start=None, frame_end=None):
+def read_bvh_hetero(path, unit, target_fps,  root_rot_offset=0, frame_start=None, frame_end=None):
     motion = import_bvh(path, end_eff=False)
     positions = motion._positions * unit_util.unit_conver_scale(unit) # (frames, joints, 3)
     rotations = motion._rotations #
@@ -401,7 +403,7 @@ def read_bvh_hetero(path, unit, target_fps, frame_start=None, frame_end=None):
     positions[:,:,2] -= positions[:,0,2:]
 
     global_heading = - np.arctan2(rotations[:,root_idx,0,2], rotations[:, root_idx, 2,2]) 
-    
+    global_heading += root_rot_offset/180*np.pi
     global_heading_diff = global_heading[1:] - global_heading[:-1] #% (2*np.pi)
     global_heading_diff_rot = np.array([geo_util.rot_yaw(x) for x in global_heading_diff])
     global_heading_rot = np.array([geo_util.rot_yaw(x) for x in global_heading])
@@ -422,58 +424,6 @@ def read_bvh_hetero(path, unit, target_fps, frame_start=None, frame_end=None):
     final_x[:,8:8+3*njoint] = np.reshape(positions_no_heading, (nfrm,-1))
     final_x[1:,8+3*njoint:8+6*njoint] = np.reshape(velocities_no_heading, (nfrm-1,-1))
     final_x[:,8+6*njoint:8+12*njoint] = np.reshape(rotations[..., :, :2, :], (nfrm,-1))
-    return final_x, motion
-
-def read_bvh_hetero_bk(path, unit, root_rot, target_fps, frame_start=None, frame_end=None):
-    motion = import_bvh(path, end_eff=False)
-    positions = motion._positions * unit_util.unit_conver_scale(unit) # (frames, joints, 3)
-    rotations = motion._rotations #
-    root_idx = motion._skeleton._root._idx
-    non_root_idx = [i for i in range(motion._skeleton._joint_lst) if i !=root_idx]
-    if frame_start is not None and frame_end is not None:
-        positions = positions[frame_start:frame_end]
-        rotations = rotations[frame_start:frame_end]
-
-    source_fps = motion._fps 
-    if source_fps > target_fps:
-        sample_ratio = int(source_fps/target_fps)
-        positions = positions[::sample_ratio]
-        rotations = rotations[::sample_ratio]
-    
-    nfrm, njoint, _ = positions.shape
-    
-    ori = copy.deepcopy(positions[0,root_idx])
-    
-    y_min = np.min(positions[0,:,1])
-    ori[1] = y_min
-
-    positions = positions - ori
-    velocities_root = positions[1:,root_idx,:] - positions[:-1,root_idx,:]
-
-    positions[:,:,0] -= positions[:,0,:1]
-    positions[:,:,2] -= positions[:,0,2:]
-
-    root_rot = rotations[:,root_idx]
-    root_rot_inv = rotations.transpose(0,2,1)
-    root_rot_diff = np.matmul(root_rot[1:,...], root_rot_inv[:-1,...])
-
-    positions_local = np.matmul(np.repeat(root_rot, njoint, axis=1), positions[...,None])
-    velocities_local = positions_local[1:] - positions_local[:-1] 
-    
-    velocities_root = np.matmul(root_rot[:-1], velocities_root[:, :, None]).squeeze()
-    #velocities_root_xy_no_heading = np.matmul(global_heading_rot[:-1], velocities_root[:, :, None]).squeeze()[...,[0,2]]
-    #rotations[:,0,...] = np.matmul(global_heading_rot, rotations[:,0,...]) 
-    size_frame = 6+njoint*3+njoint*3+njoint*6
-    final_x = np.zeros((nfrm, size_frame))
-
-    #final_x[1:,] = global_heading_diff
-    
-    final_x[1:,:3] = np.reshape(velocities_root, (nfrm-1,-1))
-    final_x[1:,3:9] = np.reshape(root_rot_diff[..., :2, :], (nfrm-1,-1)) 
-
-    final_x[:,9:9+3*(njoint-1)] = np.reshape(positions_local[:, non_root_idx], (nfrm,-1))
-    final_x[1:,9+3*(njoint-1):9+6*(njoint-1)] = np.reshape(velocities_local[:, non_root_idx], (nfrm-1,-1))
-    final_x[:,9+6*(njoint-1):9+12*(njoint-1)] = np.reshape(rotations[..., non_root_idx, :2, :], (nfrm,-1))
     return final_x, motion
 
 if __name__ == '__main__':

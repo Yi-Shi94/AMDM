@@ -24,7 +24,7 @@ optimizer:
     consistency_on: False
     consist_loss_weight: 0
     anneal_times: 80
-    initial_lr: 0.00000005
+    initial_lr: 0.0001
     final_lr: 0.00000001
     initial_teacher_epochs: 2000
     end_teacher_epochs: 200

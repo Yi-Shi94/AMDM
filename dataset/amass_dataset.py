@@ -1,15 +1,9 @@
-import copy
 import glob
-import torch
-import torch.optim as optim
-import tqdm
 import numpy as np
 
 import dataset.base_dataset as base_dataset
 import dataset.util.amass as amass_util
 import dataset.util.plot as plot_util
-import dataset.util.geo as geo_util
-import dataset.util.unit as unit_util
 import os.path as osp
 
 class AMASS(base_dataset.BaseMotionData):

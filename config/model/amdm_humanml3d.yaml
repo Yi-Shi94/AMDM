@@ -5,13 +5,14 @@ diffusion:
     estimate_mode: "epsilon"
     loss_type: "l1"
     noise_schedule_mode: "cosine"
-    T: 40 #40 #25
-    eval_T: 40 #40 #25
+    T: 30 #40 #25
+    eval_T: 30 #40 #25
 
 model_hyperparam:
     layer_num: 20
     #cond_mask_prob: 0
     #cond_emb_size: 256 #condition frame for [class, text, etc]
+    act_type: "SiLU"
     norm_type: "group_norm"
     time_emb_size: 256 #time embediing
     hidden_size: 1024 
@@ -21,9 +22,12 @@ model_hyperparam:
 optimizer:
     consistency_on: False
     consist_loss_weight: 0.00
+    
     anneal_times: 10
-    initial_lr: 0.000005
-    final_lr: 0.0000001
+    initial_lr: 0.001
+    final_lr: 0.00001
+    initial_teacher_epochs: 200
+    end_teacher_epochs: 0
     teacher_epochs: 20
     ramping_epochs: 5
     student_epochs: 75

@@ -7,6 +7,10 @@ import dataset.util.plot as plot_util
 def get_data_from_dataset():
     #config_file = 'config/model/amdm_lafan1_single.yaml'
     config_file = 'config/model/amdm_lafan1.yaml'
+
+    #config_file = 'output/base/amdm_lafan1_root6d/config.yaml'
+    #config_file = 'config/model/amdm_lafan1_subj5_small.yaml'
+    #config_file = 'output/base/amdm_lafan1/config.yaml'
     dataset = dataset_builder.build_dataset(config_file, 'cpu')
 
     num_frame = 300
@@ -24,7 +28,6 @@ def get_data_from_dataset():
     data_frames_denormalized = dataset.denorm_data(data_frames) #代码 dataset.base_dataset.denorm_data
     #data_frames_denormalized是[Frame * X]的数组 
 
-    #转化为全局关节的位置 
     data_frames_jnts_position0 = dataset.x_to_jnts(data_frames_denormalized, mode='position') #代码 dataset.base_dataset.lafan1_dataset.x_to_jnts
     print("joint:")
     plot_util.plot_lafan1(data_frames_jnts_position0, dataset.links)
@@ -43,7 +46,6 @@ def get_data_from_dataset():
     #data_frames_jnts_position3 = dataset.x_to_jnts(data_frames_denormalized, mode='ik_fk') #FK  dataset.base_dataset.lafan1_dataset.x_to_jnts
     #print("ikfk:")
     #plot_util.plot_lafan1(data_frames_jnts_position3, dataset.links)
-    
 
     #PLOT ALTOGETHER
     jnt_pos = np.array([data_frames_jnts_position0, data_frames_jnts_position1, data_frames_jnts_position2, data_frames_jnts_position2])
