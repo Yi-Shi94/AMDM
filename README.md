@@ -5,7 +5,7 @@
 </p>
 
 ## Implementation of Auto-regressive Motion Diffusion Model (A-MDM)
-We implemented a PyTorch framework for kinematic-based auto-regressive models. Our framework supports training and inference for A-MDM. Additionally, it offers real-time inpainting and reinforcement learning-based interactive control tasks. 
+We implemented a PyTorch framework for kinematic-based auto-regressive models. Our framework supports training and inference for A-MDM. Additionally, it offers real-time inpainting and reinforcement learning-based interactive control tasks. Feel free to leave any question regarding A-MDM in ISSUE or via my email. 
 
 ## Dataset Preparation
 ### LaFAN1:
@@ -26,7 +26,7 @@ Follow the procedure described in the repo of [HumanML3D](https://github.com/Eri
 
 
 ### Sanity Check:
-Specify your model config file and run
+Specify your model config file in 
 ```
 python run_sanity_data.py
 ```
@@ -37,6 +37,21 @@ python run_sanity_data.py
 ```
 python run_base.py --arg_file args/amdm_DATASET_train.txt
 ```
+or
+```
+python run_base.py
+--model_config config/model/amdm_lafan1.yaml
+--log_file output/base/amdm_lafan1/log.txt
+
+--int_output_dir output/base/amdm_lafan1/
+--out_model_file output/base/amdm_lafan1/model_param.pth
+
+--mode train
+--master_port 0
+--rand_seed 122
+```
+Temporary Visualization is saved in --int_output_dir
+
 
 ### Inference
 ```
@@ -65,6 +80,11 @@ python run_env.py --arg_file args/ENV_test_amdm_DATASET.txt
 conda create -n amdm python=3.7
 pip install -r requirement.txt
 ```
+
+### Update
+1. July 28 2024, repo releaserd
+2. upcoming, weight upload 
+
 
 ## Acknowledgement
 The RL related modules are built using existing code base of [MotionVAE](https://github.com/electronicarts/character-motion-vaes)
