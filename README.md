@@ -4,6 +4,9 @@
   <img width="100%" src="assets/images/AMDM_teaser.png"/>
 </p>
 
+## Links
+[paper](https://arxiv.org/html/2306.00416v2) | [demo]() | [video](https://www.youtube.com/watch?v=5WE9hy0xCI4&ab_channel=YISHI) | [poster]()
+
 ## Implementation of Auto-regressive Motion Diffusion Model (A-MDM)
 We implemented a PyTorch framework for kinematic-based auto-regressive models. Our framework supports training and inference for A-MDM. Additionally, it offers real-time inpainting and reinforcement learning-based interactive control tasks. Feel free to leave any question regarding A-MDM in ISSUE or via my email. 
 
