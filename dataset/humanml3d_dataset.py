@@ -173,10 +173,10 @@ def fk(rot_root, rot_joints, joint_offset, root_xyz, links):
         idx = i-1
         local_rotation = rot_joints[:,idx]
         local_rotation = geo_util.rotation_6d_to_matrix(local_rotation)#.float()
-        print(local_rotation.shape, joint_orientations[:,joint_parent[i]].shape)
+        
         joint_orientations[:,i] = joint_orientations[:,joint_parent[i]] @ local_rotation
         #joint_positions[:,i] = joint_positions[:,joint_parent[i]] + torch.matmul(joint_offset[i].expand(joint_orientations.shape[0],-1)[...,None,:], geo_util.quat_to_rotmat(joint_orientations[:,joint_parent[i]])).squeeze(1)
-        print(joint_orientations[:,joint_parent[i]].shape,  joint_offset[:,i, None].shape)
+        #print(joint_orientations[:,joint_parent[i]].shape,  joint_offset[:,i, None].shape)
         joint_positions[:,i] = joint_positions[:,joint_parent[i]] + (joint_orientations[:,joint_parent[i]] @ joint_offset[:,i, ..., None]).squeeze(-1)
 
     #joint_positions += root_xyz[:,None,:] #joints[..., [0], :] #height

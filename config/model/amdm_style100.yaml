@@ -25,12 +25,12 @@ optimizer:
     initial_lr: 0.001
     final_lr: 0.000001
     initial_teacher_epochs: 100
-    end_teacher_epochs: 20
+    end_teacher_epochs: 10
     teacher_epochs: 0
     ramping_epochs: 0
     student_epochs: 50
     peak_student_rate: 1.0
-    mini_batch_size: 4096
+    mini_batch_size: 1024
     full_T: False
     rollout: 4
     EMA:    
@@ -42,9 +42,10 @@ optimizer:
 data:   
     load_cache: True 
     dataset_name: "STYLE100"
-    path: "./data/100STYLE/"
+    path: "../AMDM_public/data/100STYLE/"
     dataset_class_name: "STYLE100"
     data_fps: 60
+    root_rot_offset: 180
     min_motion_len: 0
     max_motion_len: -1
     data_trim_begin: 0

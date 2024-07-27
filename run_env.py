@@ -49,8 +49,8 @@ def build_model(config, dataset, device):
     model = model_builder.build_model(config, dataset, device)
     return model
 
-def build_dataset(config, device):
-    dataset = dataset_builder.build_dataset(config, device)
+def build_dataset(config, load_full_dataset):
+    dataset = dataset_builder.build_dataset(config, load_full_dataset)
     return dataset
 
 def build_agent(config, model, env, device):
@@ -122,7 +122,7 @@ def copy_config_file(config_file, output_dir):
 def run(rank, num_procs, args):
     mode = args.parse_string("mode", "train")
     device = args.parse_string("device", 'cuda:0')
-    log_file = args.parse_string("log_file", "")
+    test_motion_file = args.parse_string("test_motion_file", "")
     out_model_file = args.parse_string("out_model_file", "")
     trained_model_path = args.parse_string("model_path", "")
     int_output_dir = args.parse_string("int_output_dir", "")
@@ -138,8 +138,13 @@ def run(rank, num_procs, args):
     create_output_dirs(out_model_file, int_output_dir)
     out_model_dir = os.path.dirname(out_model_file)
     
-    dataset = build_dataset(model_config_file, device)
-    
+    load_full_motion = mode == 'train' or test_motion_file != ""
+    dataset = build_dataset(model_config_file, load_full_motion)
+    if test_motion_file != "":
+        normed_motion = dataset.load_new_data(test_motion_file)
+        dataset.motion_flattened = normed_motion
+        dataset.valid_range = [0,dataset.motion_flattened.shape[0]]
+        dataset.valid_idx = np.arange(0,dataset.motion_flattened.shape[0])
     if trained_model_path:
         try:
             model = model_builder.build_model(model_config_file, dataset, device)

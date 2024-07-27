@@ -10,7 +10,7 @@ def build_trainer(config_file, device):
     model_config = load_config_file(config_file)
     model_name = model_config["model_name"]
     #print(model_config)
-    dataset = dataset_builder.build_dataset(config_file, device=device)
+    dataset = dataset_builder.build_dataset(config_file)
 
     print("Building {} trainer".format(model_name))
     if (model_name == amdm_model.AMDM.NAME):

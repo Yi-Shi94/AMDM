@@ -38,8 +38,7 @@ class HumanML3D(base_dataset.BaseMotionData):
         skip_num = max(len(self.test_valid_idx_full)//self.test_num_init_frame,1)
         self.test_valid_idx = np.array(self.test_valid_idx_full)[::skip_num]
         self.test_ref_clips = np.array([self.test_data_flattened[idx:idx+self.test_num_steps] for idx in self.test_valid_idx])
-        print()
-
+       
 
     def process_data(self, fname):
         # read a single file, convert them into single format

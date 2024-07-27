@@ -23,11 +23,11 @@ model_hyperparam:
 optimizer:
     consistency_on: False
     consist_loss_weight: 0
-    anneal_times: 50
-    initial_lr: 0.0005
-    final_lr: 0.00001
+    anneal_times: 40
+    initial_lr: 0.001
+    final_lr: 0.000002
     initial_teacher_epochs: 2000
-    end_teacher_epochs: 300
+    end_teacher_epochs: 200
     teacher_epochs: 85
     ramping_epochs: 0
     student_epochs: 15
@@ -37,11 +37,12 @@ optimizer:
     rollout: 3
     EMA:    
         ema_decay: 0.99
-        ema_start: 5000
+        ema_start: 1000
         ema_update_rate: 1
 
 data:   
     make_npz: False 
+    
     dataset_name: "LAFAN1"
     path: "data/LAFAN1_tpose"
     
@@ -55,7 +56,7 @@ data:
     data_component: [position,velocity,angle]
 
 test:
-    test_interval: 50
+    test_interval: 200
     test_num_steps: 100
     test_num_trials: 4
     test_num_init_frame: 3

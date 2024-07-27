@@ -219,13 +219,13 @@ class EnvBase(gym.Env):
 
     def reset_initial_frames(self, frame_index=None):
         # Make sure condition_range doesn't blow up
-        num_frame_used = len(self.valid_idx)
+        num_frame_avail = len(self.valid_idx)
         num_init = self.num_parallel if frame_index is None else len(frame_index)
 
         #ensor([[537085]]) ==================
         #tensor([[2122372]]) ==================
         
-        start_index = 1000 #torch.randint(0,num_frame_used-1,(num_init,1))#2122372 #torch.randint(0,num_frame_used-1,(num_init,1)) 
+        start_index = torch.randint(0, num_frame_avail-1, (num_init,1))#2122372 #torch.randint(0,num_frame_used-1,(num_init,1)) 
         start_index = self.valid_idx[start_index]
 
         data = torch.tensor(self.dataset.motion_flattened[start_index])

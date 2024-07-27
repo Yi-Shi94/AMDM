@@ -6,8 +6,9 @@ import dataset.lafan1_hetero_dataset as lafan1_hetero_dataset
 import dataset.style100_dataset as style100_dataset
 import yaml
 
-def build_dataset(config_file, device):
+def build_dataset(config_file, load_full_dataset=True):
     config = load_config_file(config_file)
+    config["data"]["load_full_dataset"] = load_full_dataset
     if "data" not in config:
         dataset_name = config['dataset_name']
         dataset_class_name = config.get('dataset_class_name', dataset_name)

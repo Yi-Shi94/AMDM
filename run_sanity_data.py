@@ -7,22 +7,20 @@ import dataset.util.plot as plot_util
 def get_data_from_dataset():
     #config_file = 'config/model/amdm_lafan1_single.yaml'
     config_file = 'config/model/amdm_lafan1.yaml'
-
-    #config_file = 'output/base/amdm_lafan1_root6d/config.yaml'
-    #config_file = 'config/model/amdm_lafan1_subj5_small.yaml'
     #config_file = 'output/base/amdm_lafan1/config.yaml'
-    dataset = dataset_builder.build_dataset(config_file, 'cpu')
+    dataset = dataset_builder.build_dataset(config_file)
+    #dataset.motion_flattened = dataset.load_new_data()
 
     num_frame = 300
     data_frames = np.zeros((num_frame, dataset.frame_dim))
     # FK: https://github.com/facebookresearch/fairmotion/blob/main/fairmotion/data/bvh.py
     for i in range(num_frame): 
         # 代码 dataset.util.bvh
-        #data_frames[i][1:,2] = rad_root 把上一帧的heading置零，这一帧heading的变化，（一帧内root绕z轴的旋转）
-        #data_frames[i][1:,:2] = dxdy_root 把上一帧的heading置零，这一帧root的x y方向的位移 
-        #data_frames[i][:,3:3+3*njoint] = joint_positions 这一帧关节点位置 （root位于原点）
-        #data_frames[i][1:,3+3*njoint:3+6*njoint] = joint_velocities  这一帧关节点的速度
-        #data_frames[i][:,3+6*njoint:3+12*njoint] = joint_orientations 这一帧关节局部旋转6d表示（3x3旋转矩阵的前两行）
+        #data_frames[i][1:,2] = rad_root 
+        #data_frames[i][1:,:2] = dxdy_root 
+        #data_frames[i][:,3:3+3*njoint] = joint_positions 
+        #data_frames[i][1:,3+3*njoint:3+6*njoint] = joint_velocities  
+        #data_frames[i][:,3+6*njoint:3+12*njoint] = joint_orientations 
         data_frames[i] = dataset[i][0]
     
     data_frames_denormalized = dataset.denorm_data(data_frames) #代码 dataset.base_dataset.denorm_data
@@ -43,9 +41,7 @@ def get_data_from_dataset():
     plot_util.plot_lafan1(data_frames_jnts_position2, dataset.links)
     
     #IK THEN FK
-    #data_frames_jnts_position3 = dataset.x_to_jnts(data_frames_denormalized, mode='ik_fk') #FK  dataset.base_dataset.lafan1_dataset.x_to_jnts
-    #print("ikfk:")
-    #plot_util.plot_lafan1(data_frames_jnts_position3, dataset.links)
+    
 
     #PLOT ALTOGETHER
     jnt_pos = np.array([data_frames_jnts_position0, data_frames_jnts_position1, data_frames_jnts_position2, data_frames_jnts_position2])

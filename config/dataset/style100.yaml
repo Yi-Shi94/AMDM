@@ -1,9 +1,0 @@
-data:  
-  dataset_name: "STYLE100"
-  path: "data/100STYLE"
-  dataset_class_name: STYLE100
-  min_motion_len: 0
-  max_motion_len: -1
-  data_trim_begin: 0
-  data_trim_end: 0
-  dataset:

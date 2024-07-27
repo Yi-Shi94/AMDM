@@ -29,7 +29,7 @@ optimizer:
     ramping_epochs: 0
     student_epochs: 280
     peak_student_rate: 1.0
-    mini_batch_size: 9000
+    mini_batch_size: 1024
     rollout: 3
     EMA: 
         ema_decay: 0.99
@@ -48,7 +48,7 @@ data:
 
 
 test:
-    test_interval: 25
+    test_interval: 50
     test_num_steps: 60
     test_num_trials: 5
     test_num_init_frame: 3

@@ -26,6 +26,11 @@ class LAFAN1(base_dataset.BaseMotionData):
         return final_x, motion_struct
 
 
+    def load_new_data(self, path):
+        x = self.process_data(path)[0]
+        x_normed = self.norm_data(x)
+        return x_normed
+
     def get_motion_fpaths(self):
         return glob.glob(osp.join(self.path, '*.{}'.format('bvh')))
     

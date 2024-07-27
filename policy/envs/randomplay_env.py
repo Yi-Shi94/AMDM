@@ -44,25 +44,6 @@ class RandomPlayEnv(base_env.EnvBase):
             self.device
         )
 
-        if 'file_name' in config and config['file_name'] != '':
-            file_idx = dataset.get_motion_fpaths().index(config['file_name'])
-        else:
-            file_idx = torch.randint(0, len(self.valid_range)-1, (self.num_parallel, 1))
-        
-        timestep_range =  torch.tensor(self.valid_range[file_idx]).squeeze().to(self.device) 
-        
-        self.timestep_start = timestep_range[...,0]
-        self.timestep_end = timestep_range[...,1]
-
-        self.clip_timestep =self.timestep_start
-
-        if 'st_frame_index' in config and 'file_name' in config :
-            self.init_frame_idx = min(self.timestep_start + config['st_frame_index'], self.timestep_end)
-        elif  'st_frame_index' in config:
-            self.init_frame_idx = config['st_frame_index']
-        else:
-            self.init_frame_idx = torch.randint(self.timestep_start, self.timestep_end-1, (self.num_parallel, 1))
-
 
         self.reward = torch.zeros((self.num_parallel, 1)).to(self.device)
         self.root_facing = torch.zeros((self.num_parallel, 1)).to(self.device)
@@ -114,21 +95,6 @@ class RandomPlayEnv(base_env.EnvBase):
         condition = condition.view(b,-1)
         return condition
     
-    def reset_initial_frames(self, frame_index=None):
-        # Make sure condition_range doesn't blow up
-        #ensor([[537085]]) ==================
-        #tensor([[2122372]]) ==================
-        data = torch.tensor(self.dataset.motion_flattened[self.init_frame_idx])
-        data = data[None,...].to(self.device).float()
-
-        #data = self.dataset.denorm_data(data.cpu()).to(self.device)
-        
-        if frame_index is None:
-            self.init_frame = data.clone()
-            self.history[:, :self.num_condition_frames] = data.clone()
-        else:
-            self.init_frame[frame_index] = data.clone()
-            self.history[frame_index, :self.num_condition_frames] = data.clone()
 
     def get_next_frame(self, action=None):
         condition = self.get_cond_frame()
@@ -148,12 +114,6 @@ class RandomPlayEnv(base_env.EnvBase):
         self.root_xz.fill_(0)
         self.done.fill_(False)
 
-        # Need to clear this if we want to use calc_foot_slide()
-        #self.foot_pos_history.fill_(1)
-        #self.reset_initial_frames()
-        #obs_components = self.get_observation_components()
-
-        #return torch.cat(obs_components, dim=-1)
     
 
     def calc_env_state(self, next_frame):

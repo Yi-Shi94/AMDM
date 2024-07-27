@@ -62,7 +62,7 @@ class STYLE100(base_dataset.BaseMotionData):
         if self.only_forward:
             file_lst = [f for f in file_lst if 'FR' in f or 'FW' in f.split('/')[-1]]
         return file_lst
-
+    
     def process_data(self, fname):
         #labal_text = fname.split('/')[-2]
         #read a single file, convert them into single format
@@ -76,6 +76,13 @@ class STYLE100(base_dataset.BaseMotionData):
         final_x, motion_struct = bvh_util.read_bvh_loco(fname, self.unit, self.fps, self.root_rot_offset)
         return final_x, motion_struct
 
+    def load_new_data(self, path):
+        x = self.process_data(path)
+        x_normed = self.norm_data(x[0])
+        #x_normed = self.transform_new_data(x_normed)
+        return x_normed
+    
+    
     def __len__(self):
         return len(self.valid_idx)
 

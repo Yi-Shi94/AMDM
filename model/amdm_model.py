@@ -397,8 +397,7 @@ class GaussianDiffusion(nn.Module):
                 if t > interact_stop_step:
                     #cur_edited_mask_inv = torch.randn_like(edited_mask_inv)
                     x = edited_data * edited_mask + x * cur_edited_mask_inv #x* cur_edited_mask_inv
-                #else:
-                #    x = edited_data * edited_mask + x*cur_edited_mask_inv
+               
                 if t > 0:
                     #if t_rp < repaint_step and t != self.T-1 and t > interact_stop_step:
                     #    ts = torch.tensor([t+1], device = last_x.device).repeat(last_x.shape[0])
@@ -464,60 +463,6 @@ class GaussianDiffusion(nn.Module):
         estimated = self.model(cur_x, perturbed_x, latent)
         return estimated, noise, perturbed_x, ts
 
-  
-""" 
-class NoiseDecoder(nn.Module):
-    def __init__(
-        self,
-        frame_size,
-        hidden_size,
-        time_emb_size,
-        layer_num,
-        norm_type
-    ):
-        super().__init__()
-
-        self.input_size = frame_size
-
-        layers = []
-        for _ in range(layer_num): 
-            non_linear = Activation.SiLU() ### v12 is ReLU
-            #non_linear = torch.nn.ReLU()
-            linear = nn.Linear(hidden_size + frame_size * 2 + time_emb_size, hidden_size)
-            if norm_type == 'layer_norm':
-                norm_layer = nn.LayerNorm(hidden_size)
-            else:
-                norm_layer = nn.GroupNorm(8, hidden_size)
-
-            layers.append(norm_layer)
-            layers.extend([non_linear, linear])
-        
-        
-        self.net = nn.ModuleList(layers)
-        self.framenet = nn.Linear(frame_size, hidden_size//2)
-        self.fin = nn.Linear(hidden_size + time_emb_size, hidden_size)
-        self.fco = nn.Linear(hidden_size + time_emb_size, frame_size)
-        self.act = Activation.SiLU()
-  
-    def forward(self, xcur, xnext, latent):
-        
-        x0 = self.framenet(xnext)
-        y0 = self.framenet(xcur)
-
-        x = torch.cat([x0, y0, latent], dim=-1)
-        x = self.fin(x)
-
-        for i, layer in enumerate(self.net):
-            if i % 3 in [0,1]:
-                x = layer(x)
-            else:
-                x = torch.cat([x, xcur, xnext, latent], dim=-1)
-                x = layer(x)
-            
-        x = torch.cat([x, latent],dim=-1) 
-        x = self.fco(x)
-        return x
-"""
 
 class NoiseDecoder(nn.Module):
     def __init__(
@@ -570,56 +515,4 @@ class NoiseDecoder(nn.Module):
         x = torch.cat([x, x0, y0, latent],dim=-1) 
         x = self.fco(x)
         return x 
-    
-class NoiseDecoder_emb(nn.Module):
-    def __init__(
-        self,
-        frame_size,
-        hidden_size,
-        time_emb_size,
-        layer_num,
-        norm_type
-    ):
-        super().__init__()
-
-        self.input_size = frame_size
-
-        layers = []
-        for _ in range(layer_num): 
-            non_linear = Activation.SiLU() ### v12 is ReLU
-            #non_linear = torch.nn.ReLU()
-            linear = nn.Linear(hidden_size + frame_size * 2 + time_emb_size, hidden_size)
-            if norm_type == 'layer_norm':
-                norm_layer = nn.LayerNorm(hidden_size)
-            elif norm_type == 'group_norm':
-                norm_layer = nn.GroupNorm(8, hidden_size)
-
-            layers.append(norm_layer)
-            layers.extend([non_linear, linear])
-        
-        
-        self.net = nn.ModuleList(layers)
-        self.framenet = nn.Linear(frame_size, hidden_size//2)
-        self.fin = nn.Linear(hidden_size + time_emb_size, hidden_size)
-        self.fco = nn.Linear(hidden_size + time_emb_size, frame_size)
-        self.act = Activation.SiLU()
-  
-    def forward(self, xcur, xnext, latent):
-        
-        x0 = self.framenet(xnext)
-        y0 = self.framenet(xcur)
-
-        x = torch.cat([x0, y0, latent], dim=-1)
-        x = self.fin(x)
-
-        for i, layer in enumerate(self.net):
-            if i % 3 in [0,1]:
-                x = layer(x)
-            else:
-                x = torch.cat([x, xcur, xnext, latent], dim=-1)
-                x = layer(x)
-            
-        x = torch.cat([x, latent],dim=-1) 
-        x = self.fco(x)
-        return x
-    
+   

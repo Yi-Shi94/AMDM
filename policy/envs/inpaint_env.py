@@ -66,12 +66,6 @@ class InpaintEnv(base_env.EnvBase):
         self.config = config
         self.model = model
         self.dataset = dataset
-        #normalization = dataset.normalization
-        #data_avg = normalization['avg']
-        #data_std = normalization['std']
-        #print(data_avg.shape, data_std.shape)
-        #p#rint(data_avg, data_std)
-        #print(data_avg[...,:3], data_std[...,:3])
         self.action = None
         self.links = self.dataset.links
         self.valid_idx = self.dataset.valid_idx
@@ -191,18 +185,7 @@ class InpaintEnv(base_env.EnvBase):
             end_frame = edit_dict['full_trajectory']['end_frame']
 
             assert data_end_frame - data_start_frame == end_frame-start_frame
-            #dim_lst = list(range(0, self.dataset.frame_dim))
-            #dim_lst = list(range(self.dataset.joint_dim_lst[0], self.dataset.joint_dim_lst[1]))
-            #elbow_left_dim = self.dataset.get_dim_by_key('position','LeftElbow')
-            #hand_left_dim = self.dataset.get_dim_by_key('position','LeftWrist')
-            #elbow_right_dim = self.dataset.get_dim_by_key('position','RightElbow')
-            #hand_right_dim = self.dataset.get_dim_by_key('position','RightWrist')
-
-            #head_dim = self.dataset.get_dim_by_key('position','Head')
-            #dim_lst = [0,1,2] #list(range(0, self.dataset.frame_dim)) #[0,1,2]
-            #dim_lst = list(range(0, self.dataset.frame_dim))
-            #dim_lst = [0,1,2,3,5] #list(range(self.dataset.joint_dim_lst[0], self.dataset.joint_dim_lst[1])) + list(range(self.dataset.vel_dim_lst[0], self.dataset.vel_dim_lst[1])) + list(range(self.dataset.angle_dim_lst[0], self.dataset.angle_dim_lst[1]))#self.dataset.height_index] #+ list(range(self.dataset.angle_dim_lst[0], self.dataset.angle_dim_lst[1])) #+ [0,1,2] #[0, 1, 2, self.dataset.height_index] + self.dataset.get_dim_by_key('position','') #list(range(start_dim, end_dim)) #[0,1,2,self.dataset.height_index]
-            #dim_lst = hand_left_dim + hand_right_dim + elbow_left_dim + elbow_right_dim + head_dim + [0,1,2,3,4,5]
+          
             dim_lst = self.dataset.get_dim_by_key('heading',None)
         
         

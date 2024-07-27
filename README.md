@@ -9,13 +9,14 @@ We implemented a PyTorch framework for kinematic-based auto-regressive models. O
 
 ## Dataset Preparation
 ### LaFAN1:
-[Download](https://github.com/ubisoft/ubisoft-laforge-animation-dataset)
-and extract under ./data/
-If you want to use another directory, change the path in config/model/amdm_lafan1.yaml data setting
+[Download](https://github.com/ubisoft/ubisoft-laforge-animation-dataset) and extract under ```./data/``` directory.
+We didn't include files with a prefix of 'obstacle'
+
 ### 100STYLE:
-[Download](https://www.ianxmason.com/100style/)
-and extract under ./data/
-If you want to use another directory, change the path in config/model/amdm_style100.yaml data setting
+[Download](https://www.ianxmason.com/100style/) and extract under ```./data/``` directory.
+
+### Any other BVH dataset:
+Download and extract under ```./data/``` directory. Create a yaml config file in ```./config/model/```, 
 
 ### AMASS:
 Follow the procedure described in the repo of [HuMoR](https://github.com/davrempe/humor)
@@ -23,16 +24,18 @@ Follow the procedure described in the repo of [HuMoR](https://github.com/davremp
 ### HumanML3D:
 Follow the procedure described in the repo of [HumanML3D](https://github.com/EricGuo5513/HumanML3D.git) 
 
+
 ### Sanity Check:
+Specify your model config file and run
 ```
 python run_sanity_data.py
 ```
 
 ## Base Model
 ### Training
-#### LaFAN1:
+
 ```
-python run_base.py --arg_file args/amdm_lafan1_train.txt
+python run_base.py --arg_file args/amdm_DATASET_train.txt
 ```
 
 ### Inference
@@ -59,7 +62,8 @@ python run_env.py --arg_file args/ENV_test_amdm_DATASET.txt
 
 ### Installation
 ```
-
+conda create -n amdm python=3.7
+pip install -r requirement.txt
 ```
 
 ## Acknowledgement

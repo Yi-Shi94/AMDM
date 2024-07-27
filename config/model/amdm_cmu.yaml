@@ -42,6 +42,7 @@ data:
     max_motion_len: -1
     data_trim_begin: 0
     data_trim_end: -1
+    root_rot_offset: 0
     data_rot_rpr: 6d
     data_component: [position, velocity, angle, offset]
 
