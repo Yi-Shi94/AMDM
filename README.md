@@ -53,7 +53,7 @@ python run_base.py
 --master_port 0
 --rand_seed 122
 ```
-Temporary Visualization is saved in --int_output_dir
+Training time visualization is saved in --int_output_dir
 
 
 ### Inference
@@ -85,8 +85,8 @@ pip install -r requirement.txt
 ```
 
 ### Update
-1. July 28 2024, framework released
-2. upcoming, checkpoint update 
+1. July 28 2024, framework released, supported LAFAN1
+2. upcoming, checkpoint upload and support for more dataset
 
 ## Acknowledgement
 Part of the RL modules used existing code base of [MotionVAE](https://github.com/electronicarts/character-motion-vaes)

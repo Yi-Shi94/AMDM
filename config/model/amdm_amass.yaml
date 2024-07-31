@@ -8,7 +8,7 @@ diffusion:
     T: 25
 
 model_hyperparam:
-    layer_num: 22
+    layer_num: 25
     #cond_mask_prob: 0
     norm_type: "group_norm"
     act_type: "SiLU"
@@ -38,7 +38,7 @@ optimizer:
 
 data:   
     dataset_name: "AMASS"
-    path: "data/AMASS_processed"
+    path: "data/AMASS"
     min_motion_len: 0
     max_motion_len: -1
     data_trim_begin: 0
