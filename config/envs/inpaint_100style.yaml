@@ -1,0 +1,139 @@
+env_module: "policy.envs.inpaint_env:InpaintEnv"
+env_name: "InpaintEnv"
+num_parallel: 6
+num_parallel_test: 1
+max_timestep: 640
+frame_skip: 1
+
+
+edit:
+  repaint_step: 1
+  interact_stop_step: 18 #-1
+
+  full:
+    0:
+      interact_stop_step: -1 #-1
+      start_frame: 50 #120 #210 #300
+      end_frame: 131 #171 #360 #510 #600
+      val: data/100STYLE/Kick/Kick_FW.bvh
+      data_start_frame: 225 #301
+      data_end_frame:  230 #541 #601
+    #0:
+    #  interact_stop_step: 18 #-1
+    #  start_frame: 10 #120 #210 #300
+    #  end_frame: 15 #171 #360 #510 #600
+    #  val: data/100STYLE/Kick/Kick_FW.bvh
+    #  data_start_frame: 225 #301
+    #  data_end_frame:  230 #541 #601
+    #1:
+    ##  interact_stop_step: 12 #-1
+    #  start_frame: 15 #120 #210 #300
+    #  end_frame: 25 #171 #360 #510 #600
+    #  val: data/100STYLE/Kick/Kick_FW.bvh
+    #  data_start_frame: 230 #301
+    #  data_end_frame:  240 #541 #601
+    #2:
+    #  interact_stop_step: 4 #-1
+    #  start_frame: 25 #120 #210 #300
+    #  end_frame: 40 #171 #360 #510 #600
+    #  val: data/100STYLE/Kick/Kick_FW.bvh
+    #  data_start_frame: 240 #301
+    #  data_end_frame:  255 #541 #601
+    #3:
+    #  interact_stop_step: 3 #-1
+    #  start_frame: 40 #120 #210 #300
+    #  end_frame: 45 #171 #360 #510 #600
+    #  val: data/100STYLE/Kick/Kick_FW.bvh
+    #  data_start_frame: 255 #301
+    #  data_end_frame:  260 #541 #601
+    #4:
+    #  interact_stop_step: 1 #-1
+    #  start_frame: 45 #120 #210 #300
+    #  end_frame: 50 #171 #360 #510 #600
+    #  val: data/100STYLE/Kick/Kick_FW.bvh
+    #  data_start_frame: 260 #301
+    #  data_end_frame:  265 #541 #601
+    #5:
+    #  interact_stop_step: -1 #-1
+    #  start_frame: 50 #120 #210 #300
+    #  end_frame: 131 #171 #360 #510 #600
+    #  val: data/100STYLE/Kick/Kick_FW.bvh
+    #  data_start_frame: 265 #301
+    #  data_end_frame:  346 #541 #601
+
+   # 1:
+   #   start_frame: 131 #120 #210 #300
+   #   end_frame: 202 #171 #360 #510 #600
+   #   val: data/100STYLE/HighKnees/HighKnees_SW.bvh
+   #   data_start_frame: 301 #301
+   #   data_end_frame:  372 #541 #601
+  #  2: 
+  #    start_frame: 271 #120 #210 #300
+  #    end_frame: 342 #171 #360 #510 #600
+  #    val: data/100STYLE/Dinosaur/Dinosaur_FW.bvh
+  #    data_start_frame: 401 #301
+  #    data_end_frame:  472 #541 #601
+    
+  #  3: 
+  #    start_frame: 1000 #120 #210 #300
+  #    end_frame: 1071 #171 #360 #510 #600
+  #    val: data/100STYLE/Penguin/Penguin_FW.bvh
+  #    data_start_frame: 401 #301
+  #    data_end_frame:  472 #541 #601
+  
+  #full_trajectory:
+  #   start_frame: 0 #210 #300
+  #   end_frame: 5000 #510 #600
+  #   val: 'circle' #data/100STYLE/Chicken/Chicken_TR1.bvh
+  #   data_start_frame: 0 #241 #301
+  #   data_end_frame: 5000 #741 #601
+
+  #full_rotation:  #deep fk
+  #  start_frame: 0 #210 #300
+  #  end_frame: 600 #510 #600
+  #  val: data/100STYLE/Proud/Proud_BR.bvh # miscs/interact_temp/positions.npy
+  #  data_start_frame: 1701 #301
+  #  data_end_frame: 2301 #601
+  
+  #full_joint: #deep ik
+  #  start_frame: 0 #210 #300
+  ##  end_frame: 600 #510 #600
+  #  val: data/100STYLE/Aeroplane/Aeroplane_SR.bvh
+  #  data_start_frame: 1 #301
+  #  data_end_frame: 601 #601
+
+  #heading:
+  #  val: 0.03
+  #  start_frame: 0
+  #  end_frame: -1 
+  
+  #trajectory:
+  #  start_frame: 0
+  #  end_frame: -1 
+  #  shape: line #circle #line
+
+  #root_dxdy:
+  #  0:
+  #    val: 0
+  #    start_frame: 0
+  #    end_frame: -1 
+  #  1:
+  #    val: 0.03
+  #    start_frame: 0
+  #    end_frame: -1 
+  
+  #position:
+  #  Head:
+  #    1:
+  #      val: 1.1 #y axis is the up axis   
+  #      start_frame: 0
+  #      end_frame: 1000
+
+  #Hips:
+  #  1: 
+  #    val: 0.8
+  #    start_frame: 0
+  #    end_frame: 1000
+
+  #angle:
+  #velocity:

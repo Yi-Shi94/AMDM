@@ -1,0 +1,62 @@
+model_name: "AMDM"
+
+diffusion:
+    sample_mode: "ddpm"
+    estimate_mode: "epsilon"
+    loss_type: "l1"
+    noise_schedule_mode: "cosine"
+    T: 30 #40 #25
+    eval_T: 30 #40 #25
+
+model_hyperparam:
+    layer_num: 20
+    #cond_mask_prob: 0
+    #cond_emb_size: 256 #condition frame for [class, text, etc]
+    act_type: "SiLU"
+    norm_type: "group_norm"
+    time_emb_size: 256 #time embediing
+    hidden_size: 1024 
+    use_cond: False
+    cond_num_cls: 0
+
+optimizer:
+    consistency_on: False
+    consist_loss_weight: 0.00
+    
+    anneal_times: 10
+    initial_lr: 0.001
+    final_lr: 0.00001
+    initial_teacher_epochs: 200
+    end_teacher_epochs: 0
+    teacher_epochs: 0
+    ramping_epochs: 0
+    student_epochs: 20
+    peak_student_rate: 1.0
+    mini_batch_size: 1024
+    rollout: 3
+    EMA: 
+        ema_decay: 0.9999
+        ema_start: 5000
+        ema_update_rate: 1
+
+data:   
+    load_cache: True
+    dataset_name: "HumanML3D_AR"
+    train_split: "data/HumanML3D/train.txt"
+    eval_split: "data/HumanML3D/eval.txt"
+    test_split: "data/HumanML3D/test.txt"
+    path: "data/HumanML3D/new_joint_vecs/"
+    root_rot_offset: 0
+    min_motion_len: 0
+    max_motion_len: -1
+    data_trim_begin: 0
+    data_trim_end: -1
+    data_rot_rpr: 6d
+    data_component: [position]
+
+     
+test:
+    test_interval: 50
+    test_num_steps: 60
+    test_num_trials: 5
+    test_num_init_frame: 3

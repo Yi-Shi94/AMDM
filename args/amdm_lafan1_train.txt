@@ -1,0 +1,9 @@
+--model_config config/model/amdm_lafan1.yaml
+--log_file output/base/amdm_lafan1/log.txt
+
+--int_output_dir output/base/amdm_lafan1/
+--out_model_file output/base/amdm_lafan1/model_param.pth
+
+--mode train
+--master_port 0
+--rand_seed 122

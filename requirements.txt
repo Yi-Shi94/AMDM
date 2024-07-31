@@ -1,0 +1,10 @@
+tqdm
+imageio
+matplotlib
+pybullet
+scipy
+pyyaml
+torch==1.13.1
+gymnasium==0.28.1
+urllib3==1.26.6
+wandb

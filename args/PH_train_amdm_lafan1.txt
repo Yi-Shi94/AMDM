@@ -1,0 +1,14 @@
+
+--env_config config/envs/path_amdm.yaml
+--model_config output/base/amdm_lafan1/config.yaml
+--model_path output/base/amdm_lafan1/model_param.pth
+--agent_config config/agents/ppo.yaml
+
+--int_output_dir output/path/amdm_lafan1/
+--out_model_file output/path/amdm_lafan1/policy_model.pth
+
+
+--device cuda:0
+--mode train
+--master_port 0
+--rand_seed 0 

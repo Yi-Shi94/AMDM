@@ -1,0 +1,10 @@
+env_module: "policy.envs.randomplay_env:RandomPlayEnv"
+env_name: "RandomPlayEnv"
+num_parallel: 1
+num_parallel_test: 1
+max_timestep: 10000
+frame_skip: 1
+st_frame_index: 1200
+file_name: '' #data/LAFAN1_tpose_part/run1_subject5.bvh
+
+#text: ['sidestep', 'forward', 'backward', 'stand still',',']
