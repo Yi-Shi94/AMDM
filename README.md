@@ -82,7 +82,14 @@ python run_env.py --arg_file args/ENV_test_amdm_DATASET.txt
 ```
 conda create -n amdm python=3.7
 pip install -r requirement.txt
+mkdir output
+mkdir data
 ```
+### For users wish to create more variants given a mocap dataset
+1. Train the base model
+2. Follow the main function in gen_base_bvh.py, you can generate diverse motion given any starting pose:
+[![](https://markdown-videos-api.jorgenkh.no/youtube/DniQWu_4Kag)](https://youtu.be/DniQWu_4Kag)
+
 
 ### Update
 1. July 28 2024, framework released, supported LAFAN1

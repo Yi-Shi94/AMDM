@@ -75,7 +75,7 @@ if __name__ == '__main__':
 
     step_default = 400
     num_trial_default = 5
-    model_name = 'amdm_lafan1_1'
+    model_name = 'amdm_lafan1'
 
     
     par_path = 'output/base/'
