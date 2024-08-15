@@ -2,7 +2,7 @@ env_module: "policy.envs.inpaint_env:InpaintEnv"
 env_name: "InpaintEnv"
 num_parallel: 1
 num_parallel_test: 1
-max_timestep: 10000
+max_timestep: 600
 frame_skip: 1
 
 model_type: 'inpaint'
@@ -60,8 +60,8 @@ edit:
     start_frame: 0
     end_frame: -1 
     shape: circle #line
-    radius: 7 # 6-16
-    direction: backward #side1 side2 forward backward
+    radius: 7
+    direction: side2 #side1 side2 forward backward
 
   #root_dxdy:
   #  0:

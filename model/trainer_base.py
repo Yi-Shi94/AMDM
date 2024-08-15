@@ -3,15 +3,14 @@ import copy
 import numpy as np
 
 import torch
-import torch.nn.functional as F
 import torch.optim as optim
 
 from torch.utils.data import DataLoader
 
-import util.eval as eval_util
 import util.vis_util as vis_util
 import util.logging as logging_util
 import util.save as save_util
+import yaml
 
 class BaseTrainer():
     def __init__(self, config, dataset, device):
@@ -34,7 +33,8 @@ class BaseTrainer():
         
         self.frame_dim = dataset.frame_dim
         self.train_dataloader = DataLoader(dataset=dataset, batch_size=self.batch_size, shuffle=True, drop_last=True)
-        self.logger =  logging_util.wandbLogger(proj_name="{}_{}".format(self.NAME,dataset.NAME), run_name=self.NAME)
+
+        self.logger =  logging_util.wandbLogger(proj_name="{}_{}".format(self.NAME, dataset.NAME), run_name=self.NAME)
 
         self.plot_jnts_fn = self.dataset.plot_jnts if hasattr(self.dataset, 'plot_jnts') and callable(self.dataset.plot_jnts) \
                                                         else vis_util.vis_skel
@@ -79,12 +79,12 @@ class BaseTrainer():
         self.sample_schedule = torch.cat([self.sample_schedule  for _ in range(self.anneal_times)], axis=-1)
         self.sample_schedule = torch.cat([self.initial_schedule, self.sample_schedule, self.end_schedule])
        
-        self.total_epochs = self.sample_schedule.shape[0]+1
+        self.total_epochs = self.sample_schedule.shape[0]
 
 
     def train_model(self, model, out_model_file, int_output_dir, log_file):
         self._init_optimizer(model)
-        for ep in range(0, self.total_epochs+1):
+        for ep in range(self.total_epochs):
             loss_stats = self.train_loop(ep, model)
             if ep == 0:
                 continue
@@ -96,7 +96,7 @@ class BaseTrainer():
             self.logger.log_epoch(loss_stats)
             self.logger.print_log(loss_stats)
             
-
+        save_util.save_weight(model, out_model_file)
 
     def evaluate(self, ep, model, result_ouput_dir):
         model.eval()

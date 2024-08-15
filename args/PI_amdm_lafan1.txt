@@ -3,7 +3,7 @@
 --model_path output/base/amdm_lafan1/model_param.pth
 --int_output_dir output/base/amdm_lafan1/
 
---test_motion_file data/LAFAN1_tpose/dance1_subject2.bvh
+--test_motion_file data/LAFAN1/dance1_subject2.bvh
 --device cuda:0
 --master_port 0
 --mode test

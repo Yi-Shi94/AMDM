@@ -3,8 +3,6 @@ import warnings
 warnings.filterwarnings("ignore")
 
 import os
-os.environ['WANDB_API_KEY']='d2693de8bbe1184bdfd9703d7433fe3078232f18'
-os.environ['WANDB_ENTITY']='sy3'
 import sys
 import shutil
 import torch

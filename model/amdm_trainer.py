@@ -53,19 +53,12 @@ class AMDMTrainer(trainer_base.BaseTrainer):
        
         diff_loss, pred_frame = model.compute_loss(last_frame,  ground_truth, None, extra_info)
         loss = self.diffusion_loss_weight * diff_loss 
-        
-        if self.consistency_on:
-            consist_loss = self.compute_rpr_consist_loss(last_frame, pred_frame)
-            loss += self.consist_loss_weight * consist_loss
-
+    
         loss.backward()
         self.optimizer.step()
         model.update()
 
-        if self.consistency_on:
-            return {"diff_loss":diff_loss.item(), "consist_loss": consist_loss.item()}
-        else:
-            return {"diff_loss":diff_loss.item()}
+        return {"diff_loss":diff_loss.item()}
     
 
     def compute_student_loss(self, model, sampled_frames, sch_samp_prob, extra_info):
@@ -81,7 +74,6 @@ class AMDMTrainer(trainer_base.BaseTrainer):
             ground_truth = sampled_frames[:,next_index,:]
             
             if self.full_T:
-                #sampled_frames_ = sampled_frames[:shrinked_batch_size]
                 shrinked_batch_size = batch_size
                 if st_index == 0:
                     last_frame = sampled_frames[:,0,:]
@@ -100,10 +92,7 @@ class AMDMTrainer(trainer_base.BaseTrainer):
                 diff_loss, pred_frame = model.compute_loss(last_frame_expanded, ground_truth_expanded, ts, extra_info)
                 loss = self.diffusion_loss_weight * diff_loss
 
-                if self.consistency_on:
-                    consist_loss = self.compute_rpr_consist_loss(last_frame_expanded, pred_frame)
-                    loss += self.consist_loss_weight * consist_loss 
-
+                
             else:
                 if st_index == 0:
                     last_frame = sampled_frames[:,0,:]
@@ -118,22 +107,16 @@ class AMDMTrainer(trainer_base.BaseTrainer):
                 diff_loss_student, pred_frame = model.compute_loss(last_frame, ground_truth, None, extra_info)
                 diff_loss =  diff_loss_student  +  diff_loss_teacher #/ self.num_rollout
                 loss = self.diffusion_loss_weight * diff_loss
-                if self.consistency_on:
-                    consist_loss = self.compute_rpr_consist_loss(last_frame, pred_frame)
-                    loss += self.consist_loss_weight * consist_loss 
+             
 
             loss.backward()
             self.optimizer.step()
             model.update()
 
             loss_diff_sum += diff_loss.item()
-            if self.consistency_on:
-                loss_consist_sum += consist_loss.item()
+           
         
-        if self.consistency_on:
-            return {"diff_loss": loss_diff_sum, "consist_loss":loss_consist_sum}
-        else:
-            return {"diff_loss": loss_diff_sum}
+        return {"diff_loss": loss_diff_sum}
     
 
     def train_loop(self, ep, model):

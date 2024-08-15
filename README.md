@@ -5,15 +5,15 @@
 </p>
 
 ## Links
-[page](yi-shi94.github.io/amdm_page/)| [paper](https://arxiv.org/html/2306.00416v2) | [video](https://www.youtube.com/watch?v=5WE9hy0xCI4&ab_channel=YISHI) 
+[page](https://yi-shi94.github.io/amdm_page/) | [paper](https://arxiv.org/html/2306.00416v2) | [video](https://www.youtube.com/watch?v=5WE9hy0xCI4&ab_channel=YISHI) | [poster]() | [slides](https://docs.google.com/presentation/d/1kA_LT9zi4nb7FbJjZGD_g692NfGSKbfXBuVEQxUEXAg/edit?usp=sharing)
 
 ## Implementation of Auto-regressive Motion Diffusion Model (A-MDM)
-We implemented a PyTorch framework for kinematic-based auto-regressive motion generation models. Our framework supports training and inference. Additionally, it offers real-time inpainting and reinforcement learning-based interactive control tasks. Feel free to leave any question regarding A-MDM in ISSUE or via my email. 
+We developed a PyTorch framework for kinematic-based auto-regressive motion generation models, supporting both training and inference. Our framework also includes implementations for real-time inpainting and reinforcement learning-based interactive control. If you have any questions about A-MDM, please feel free to reach out via ISSUE or email.
 
 ## Dataset Preparation
 ### LaFAN1:
 [Download](https://github.com/ubisoft/ubisoft-laforge-animation-dataset) and extract under ```./data/``` directory.
-We didn't include files with a prefix of 'obstacle'
+BEWARE: We didn't include files with a prefix of 'obstacle' in our experiments. 
 
 ### 100STYLE:
 [Download](https://www.ianxmason.com/100style/) and extract under ```./data/``` directory.
@@ -89,7 +89,7 @@ pip install -r requirement.txt
 2. upcoming, checkpoint upload and support for more dataset
 
 ## Acknowledgement
-Part of the RL modules used existing code base of [MotionVAE](https://github.com/electronicarts/character-motion-vaes)
+Part of the RL modules utilized in our framework are based on the existing codebase of [MotionVAE](https://github.com/electronicarts/character-motion-vaes), please cite their work if you find using RL to guide autoregressive motion generative models helpful to your research.
 
 ## BibTex
 ```

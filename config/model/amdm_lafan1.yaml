@@ -5,8 +5,8 @@ diffusion:
     estimate_mode: "epsilon"
     loss_type: "l1"
     noise_schedule_mode: "cosine"
-    T: 25 #40 #25
-    eval_T: 25 #40 #25
+    T: 15 #40 #25
+    eval_T: 15 #40 #25
     #denoiser: 
 
 model_hyperparam:
@@ -23,16 +23,16 @@ model_hyperparam:
 optimizer:
     consistency_on: False
     consist_loss_weight: 0
-    anneal_times: 40
-    initial_lr: 0.001
+    anneal_times: 200
+    initial_lr: 0.0005
     final_lr: 0.000001
-    initial_teacher_epochs: 2000
-    end_teacher_epochs: 200
-    teacher_epochs: 80
+    initial_teacher_epochs: 500
+    end_teacher_epochs: 500
+    teacher_epochs: 4
     ramping_epochs: 0
-    student_epochs: 20
-    peak_student_rate: 1.0
-    mini_batch_size: 2048
+    student_epochs: 1
+    peak_student_rate: 1
+    mini_batch_size: 1024
     full_T: False
     rollout: 3
     EMA:    
@@ -44,7 +44,7 @@ data:
     make_npz: False 
     
     dataset_name: "LAFAN1"
-    path: "data/LAFAN1"
+    path: "./data/LAFAN1"
     
     root_rot_offset: -90 #degree
     data_fps: 30
@@ -57,6 +57,6 @@ data:
 
 test:
     test_interval: 100
-    test_num_steps: 100
-    test_num_trials: 4
-    test_num_init_frame: 3
+    test_num_steps: 60
+    test_num_trials: 1
+    test_num_init_frame: 2

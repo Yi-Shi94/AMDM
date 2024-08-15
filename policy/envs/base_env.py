@@ -181,12 +181,11 @@ class EnvBase(gym.Env):
         with torch.no_grad():
             output = self.model.rl_step(condition, action, extra_info)
             
-        if self.is_rendered:
-            
-            self.record_motion_seq[:,self.record_timestep,:]= output.cpu().detach().numpy()
-            self.record_timestep += 1
-            if self.record_timestep % 90 == 0 and self.record_timestep != 0:
-                self.save_motion()
+        #if self.is_rendered:   
+        #    self.record_motion_seq[:,self.record_timestep,:]= output.cpu().detach().numpy()
+        #    self.record_timestep += 1
+        #    if self.record_timestep % 90 == 0 and self.record_timestep != 0:
+        #        self.save_motion()
             
         return output
 
