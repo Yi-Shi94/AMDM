@@ -1,0 +1,11 @@
+--env_config config/envs/randomplay.yaml
+--model_config output/base/amdm_humanml3d1/config.yaml
+--model_path output/base/amdm_humanml3d1/model_param.pth
+--int_output_dir output/base/amdm_humanml3d1/
+
+--test_motion_file data/HumanML3D/new_joint_vecs/009200.npy
+
+--device cuda:0
+--master_port 0
+--mode test
+--rand_seed 114514 

@@ -1,0 +1,11 @@
+--model_config output/base/amdm_100style/config.yaml
+--model_path output/base/amdm_100style/_ep800.pth
+
+--agent_config output/targetgreedy/amdm_100style/ppo.yaml
+--env_config output/targetgreedy/amdm_100style/targetgreedy_amdm.yaml
+--int_output_dir output/targetgreedy/amdm_100style/
+--controller_path output/targetgreedy/amdm_100style/policy_model.pth
+--test_motion_file data/100STYLE/Chicken/Chicken_FR.bvh
+--device cuda:0
+--mode test
+--master_port 0

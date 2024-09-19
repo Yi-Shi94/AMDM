@@ -1,14 +1,16 @@
 import dataset.amass_dataset as amass_dataset
-import dataset.mdm_dataset as mdm_dataset
+import dataset.humanml3d_text_dataset as humanml3d_text_dataset
 import dataset.humanml3d_dataset as humanml3d_dataset
+import dataset.humanml3d_rev_dataset as humanml3d_rev_dataset
 import dataset.lafan1_dataset as lafan1_dataset
 import dataset.lafan1_hetero_dataset as lafan1_hetero_dataset
 import dataset.style100_dataset as style100_dataset
 import yaml
 
-def build_dataset(config_file, load_full_dataset=True):
+def build_dataset(config_file, load_full_dataset):
     config = load_config_file(config_file)
-    config["data"]["load_full_dataset"] = load_full_dataset
+    config["data"]["load_full_data"] = load_full_dataset
+    
     if "data" not in config:
         dataset_name = config['dataset_name']
         dataset_class_name = config.get('dataset_class_name', dataset_name)
@@ -20,10 +22,12 @@ def build_dataset(config_file, load_full_dataset=True):
 
     if (dataset_class_name == amass_dataset.AMASS.NAME):
         dataset = amass_dataset.AMASS(config)
+    elif (dataset_class_name == humanml3d_rev_dataset.HumanML3D.NAME):
+        dataset = humanml3d_rev_dataset.HumanML3D(config)
+    elif (dataset_class_name == humanml3d_text_dataset.HumanML3D.NAME):
+        dataset = humanml3d_text_dataset.HumanML3D(config)
     elif (dataset_class_name == humanml3d_dataset.HumanML3D.NAME):
         dataset = humanml3d_dataset.HumanML3D(config)
-    elif (dataset_class_name == mdm_dataset.HumanML3D.NAME):
-        dataset = mdm_dataset.HumanML3D(config)
     elif (dataset_class_name == lafan1_dataset.LAFAN1.NAME):
         dataset = lafan1_dataset.LAFAN1(config)
     elif (dataset_class_name == lafan1_hetero_dataset.LAFAN1_hetero.NAME):

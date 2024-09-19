@@ -193,7 +193,7 @@ def import_bvh(bvh_file, root_joint_name=None, end_eff=False):
             cnt += 2
 
         elif item == 'frame' and items[cnt+1].lower() == 'time:':
-            fps = int(1.0/float(items[cnt+2]))
+            fps = round(1.0/float(items[cnt+2]))
             motion.set_fps(fps)
             cnt += 3
             break
@@ -328,7 +328,7 @@ def read_bvh_loco(path, unit, target_fps, root_rot_offset=0, frame_start=None, f
         positions = positions[frame_start:frame_end]
         rotations = rotations[frame_start:frame_end]
 
-    source_fps = motion._fps 
+    source_fps = motion._fps
     if source_fps > target_fps:
         sample_ratio = int(source_fps/target_fps)
         positions = positions[::sample_ratio]

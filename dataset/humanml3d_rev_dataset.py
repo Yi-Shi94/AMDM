@@ -10,38 +10,35 @@ from dataset.util.humanml3d.script.motion_process import recover_from_ric, extra
 from dataset.util.humanml3d.util.paramUtil import *
 
 class HumanML3D(base_dataset.BaseMotionData):
-    NAME = 'HumanML3D_ORG'
+    NAME = 'HumanML3D_REV'
     def __init__(self, config):
+        self.train_split_file = config['data']['train_split']
+        self.test_split_file = config['data']['test_split']
+        #self.eval_split_file = config['data']['eval_split']
+        
         super().__init__(config)
 
-        self.train_split_file = config['data']['train_split']
-        self.val_split_file = config['data']['val_split']
-        self.test_split_file = config['data']['test_split']
-        self.test_data_flattened, self.test_valid_idx = self.load_motion_from_split(self.test_split_file,self.test_num_steps)
-        self.val_data_flattened, self.val_valid_idx = self.load_motion_from_split(self.val_split_file,self.test_num_steps)
-       
-        skip_num = max(len(self.val_valid_idx)//self.test_num_init_frame,1)
-        self.val_valid_idx = np.array(self.val_valid_idx)[::skip_num]
-        self.val_ref_clips = np.array([self.val_data_flattened[idx:idx+self.test_num_steps] for idx in self.val_valid_idx])
+        self.use_eval_split = True
+        self.use_cond = False
 
-        skip_num = max(len(self.test_valid_idx)//self.test_num_init_frame,1)
-        self.test_valid_idx = np.array(self.test_valid_idx)[::skip_num]
+        self.eval_valid_range = []
+        self.test_data = self.load_new_dataset(self.test_split_file)
+        
+        self.test_valid_idx_full = []
+        num = 0
+        for i in range(len(self.test_data)):
+            length = self.test_data[i].shape[0]
+            self.test_valid_idx_full += range(num, num+length-self.test_num_steps)
+            num = num+length
+        
+        self.test_data_flattened = np.concatenate(self.test_data,axis=0)
+        self.test_data_flattened = self.norm_data(self.test_data_flattened)
+        self.test_data_flattened = self.transform_new_data(self.test_data_flattened)
+
+        skip_num = max(len(self.test_valid_idx_full)//self.test_num_init_frame,1)
+        self.test_valid_idx = np.array(self.test_valid_idx_full)[::skip_num]
         self.test_ref_clips = np.array([self.test_data_flattened[idx:idx+self.test_num_steps] for idx in self.test_valid_idx])
        
-    def load_motion_from_split(self, split_file, num_steps_end_clip):
-        split_valid_idx = []
-        split_idx =  0
-        split_data = self.load_new_dataset(split_file)
-
-        for i in range(len(split_data)):
-            length = split_data[i].shape[0]
-            split_valid_idx += range(split_idx, split_idx + length - num_steps_end_clip)
-            split_idx = split_idx + length
-        
-        split_data_flattened = np.concatenate(split_data,axis=0)
-        split_data_flattened = self.norm_data(split_data_flattened)
-        split_data_flattened = self.transform_new_data(split_data_flattened)
-        return split_data_flattened, split_valid_idx
 
     def process_data(self, fname):
         # read a single file, convert them into single format

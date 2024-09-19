@@ -36,6 +36,7 @@ class BaseMotionData(data.Dataset):
         self.rotate_order = self.skel_info.get('euler_rotate_order',None)
         
         self.fps = config["data"]["data_fps"]
+
         self.path = config["data"]["path"]
 
         self.min_motion_len = config["data"]["min_motion_len"]
@@ -44,9 +45,13 @@ class BaseMotionData(data.Dataset):
         self.data_trim_end = config["data"]["data_trim_end"]
 
         self.root_rot_offset = config["data"]["root_rot_offset"]
-        self.load_cache = config["data"].get('load_cache',True)
-        self.load_full_data = config["data"].get('load_full_data',True)
         
+        # if true, load data, if not only load stats for normalization(std avg)
+        self.load_full_data = config["data"].get('load_full_data',True)
+
+        # if true, when loading data, load cached data.npz, if not load motion file directly
+        self.load_cache = config["data"].get('load_cache',True)
+
         self.data_rot_rpr = config["data"].get("data_rot_rpr","6d") #6d, expmap, aa, quat
         self.data_root_rot_rpr = config["data"].get("data_root_rot_rpr","angle") # angle, rot
         self.data_root_linear_rpr = config["data"].get("data_root_linear_rpr","dxdy") #dxdy, dxdydz, aa, quat
@@ -66,7 +71,14 @@ class BaseMotionData(data.Dataset):
         root_linear_dim_map = {"dxdy":2, "dxdydz":3}
         self.data_root_linear_dim = root_linear_dim_map[self.data_root_linear_rpr]
         
-        self.data_root_dim = self.data_root_rot_dim + self.data_root_linear_dim
+        self.data_root_dim = 0 #self.data_root_rot_dim + self.data_root_linear_dim
+        self.dxdydr_dim_lst = [0,0]
+        self.joint_dim_lst =  [0,0]
+        self.vel_dim_lst = [0,0]
+        self.angle_dim_lst = [0,0]
+        self.offset_dim_lst = [0,0]
+        self.height_index = [0,0]
+
         #self.data_format = config["data"].get("data_format",["dxdyda","position","velocity","angle"])
         self.data_component = config["data"]["data_component"] #,["position","velocity","angle"])
         
@@ -77,40 +89,53 @@ class BaseMotionData(data.Dataset):
         self.extra = dict() # for labels and other multi-modal data (text & audio & video)
         self.labels = list()
 
-        self.motion_lst = list()
+        self.motion_flattened = list()
         self.label_lst = list() # for labels and other multi-modal data (text & audio & video)
-        #self.valid_idx  = list()
+        
+        self.valid_idx = []
         self.valid_range = list()
         self.test_valid_idx = list()    
         self.file_lst = list()
         self.joint_offset = list()
+        self.test_ref_clips = list()  
 
-        self.test_ref_clips = []    
+        if osp.exists(osp.join(self.path,'stats.npz')):
+            with np.load(osp.join(self.path,'stats.npz')) as stats:
+
+                self.std = stats['std']
+                self.avg = stats['avg']
+
+                self.normalization = {
+                    'mode': 'zscore',
+                    'std': self.std,
+                    'avg': self.avg
+                }
+                
+                self.data_root_dim = stats['data_root_dim']
+                self.dxdydr_dim_lst = stats['dxdydr_dim_lst'] 
+                self.joint_dim_lst = stats['joint_dim_lst']  
+                self.vel_dim_lst = stats['vel_dim_lst']
+                self.angle_dim_lst = stats['angle_dim_lst']
+                self.offset_dim_lst = stats['offset_dim_lst']
+                self.height_index = stats['height_index']
+
+                self.joint_names = stats['joint_names'].tolist()
+                self.joint_offset = stats['joint_offset']
+                self.num_jnt = len(self.joint_names)
+
+                self.links = stats['links']
+                self.frame_dim = stats['frame_dim']
 
         if self.load_full_data:
             if osp.exists(osp.join(self.path,'data.npz')) and self.load_cache:
                 with np.load(osp.join(self.path,'data.npz')) as data:
-                    self.std = data['std']
-                    self.avg = data['avg']
                     self.motion_flattened = data['motion_flattened']
-                    
                     self.valid_range = data['valid_range']
                     self.file_lst = data['file_lst']
-                    self.links = data['links']
-                    self.joint_names = data['joint_names'].tolist()
-                    self.joint_offset = data['joint_offset']
-                    self.num_jnt = len(self.joint_names)
                 
                 if 'labels' in data.keys():
                     self.labels= data['labels']
-
-                self.normalization = {
-                    "mode": 'zscore',
-                    "avg": self.avg,
-                    "std": self.std
-                }
-            
-
+                
             else:
                 file_paths = self.get_motion_fpaths()
                 
@@ -121,15 +146,18 @@ class BaseMotionData(data.Dataset):
                     ret = self.process_data(fname)
                     if ret is None:
                         continue
-
-                    motion, motion_struct = ret
-                    if i == 0:
-                        self.motion_struct = motion_struct
-                    if not self.use_offset:
-                        self.joint_offset =  motion_struct._skeleton.get_joint_offset()
+                    elif type(ret) is not tuple:
+                        motion = ret
                     else:
-                        offset = motion_struct._skeleton.get_joint_offset()
-                        self.joint_offset.append(offset)
+                        motion, motion_struct = ret
+                        if self.motion_struct is None:
+                            self.motion_struct = motion_struct
+
+                        if self.use_offset is None:
+                            self.joint_offset =  motion_struct._skeleton.get_joint_offset()
+                        else:
+                            offset = motion_struct._skeleton.get_joint_offset()
+                            self.joint_offset.append(offset)
 
                     length = len(motion)
 
@@ -147,63 +175,63 @@ class BaseMotionData(data.Dataset):
                     self.valid_range.append([self.total_len, self.total_len + length])
                     
                     self.total_len += length
-                    self.motion_lst.append(motion)
+                    self.motion_flattened.append(motion)
 
-                self.motion_flattened = np.concatenate(self.motion_lst,axis=0)
-
-
+                # Num frames x Dim feature
+                self.motion_flattened = np.concatenate(self.motion_flattened,axis=0)
+                
+                # skeleton joint offset
                 self.joint_offset = np.array(self.joint_offset)
+
+                # skeleton joint connection
+                self.links = self.motion_struct._skeleton.get_links() if self.links is None else self.links
+
+                # skeleton joint names
+                self.joint_names = [x._name for x in self.motion_struct._skeleton._joint_lst] if self.joint_names is None else self.joint_names
+                self.num_jnt = len(self.joint_names)
+
+                # boundry of mocap clips
                 self.valid_range = np.array(self.valid_range)
                 
+                # calculate norm states given frames
                 self.motion_flattened, self.normalization = self.create_norm(self.motion_flattened, 'zscore')
                 self.std = self.normalization['std']
                 self.avg = self.normalization['avg']
                 
-                self.links = self.motion_struct._skeleton.get_links() if self.links is None else self.links
-                self.joint_names = [x._name for x in self.motion_struct._skeleton._joint_lst] if self.joint_names is None else self.joint_names
-                self.num_jnt = len(self.joint_names)
-                
-                np.savez(osp.join(self.path,'data.npz'), std = self.std, avg = self.avg, valid_range = self.valid_range,
-                        motion_flattened = self.motion_flattened, file_lst=self.file_lst, joint_offset = self.joint_offset,
-                        joint_names= self.joint_names, links = self.links)
-                np.savez(osp.join(self.path,'stats.npz'), std = self.std, avg = self.avg, joint_offset = self.joint_offset,
-                        joint_names= self.joint_names, links = self.links, frame_dim = self.motion_flattened.shape[-1])
+                self.frame_dim = self.motion_flattened.shape[-1]
 
-            self.valid_idx = []
+                #reorder and create joint index limits, for retrieval specific element in the feature in the future
+                self.motion_flattened, self.std, self.avg = self.transform_data_flattened(self.motion_flattened, self.std, self.avg)
+
+                np.savez(osp.join(self.path,'data.npz'), 
+                        motion_flattened = self.motion_flattened, file_lst= self.file_lst, valid_range = self.valid_range)
+                np.savez(osp.join(self.path,'stats.npz'), 
+                            std = self.std, avg = self.avg, frame_dim = self.frame_dim, 
+                            joint_offset = self.joint_offset, joint_names= self.joint_names, links = self.links, 
+                            data_root_dim = self.data_root_dim,
+                            dxdydr_dim_lst = self.dxdydr_dim_lst,
+                            joint_dim_lst = self.joint_dim_lst,  
+                            vel_dim_lst = self.vel_dim_lst,
+                            angle_dim_lst = self.angle_dim_lst,
+                            offset_dim_lst = self.offset_dim_lst,
+                            height_index = self.height_index
+                        )
+            
+    
+            
             self.test_valid_idx_full = []
             for i_f, (idx_st, idx_ed) in enumerate(self.valid_range):
                 self.test_valid_idx_full += range(idx_st, idx_ed - self.test_num_steps)
                 idx_ed = idx_ed - self.rollout
-                
                 self.valid_range[i_f][1] = idx_ed
                 self.valid_idx += list(range(idx_st, idx_ed))
             
             self.valid_idx = np.array(self.valid_idx)
-            self.motion_flattened, self.std, self.avg = self.transform_data_flattened(self.motion_flattened, self.std, self.avg)
             skip_num = max(len(self.test_valid_idx_full)//self.test_num_init_frame,1)
             self.test_valid_idx = np.array(self.test_valid_idx_full)[::skip_num]
             self.test_ref_clips = np.array([self.motion_flattened[idx:idx+self.test_num_steps] for idx in self.test_valid_idx])
-            self.frame_dim = self.motion_flattened.shape[-1]
-            
-            print('rollout',self.rollout)
-            print('ref start index',self.test_valid_idx)
-            print('ref length',self.test_ref_clips[0].shape)
+
             print('data shape:{}'.format(self.motion_flattened.shape))
-
-        else:
-            assert osp.exists(osp.join(self.path,'stats.npz'))
-            with np.load(osp.join(self.path,'stats.npz')) as data:
-                self.std = data['std']
-                self.avg = data['avg']
-                self.joint_names = data['joint_names']
-                self.joint_offset = data['joint_offset']
-                self.links = data['links']
-                self.frame_dim = data['frame_dim']
-                self.valid_range = data['valid_range']
-                self.file_lst = data['file_lst']
-
-        self.normalization['std'] = self.std
-        self.normalization['avg'] = self.avg
         
         self.joint_offset = unit_util.unit_conver_scale(self.unit) *  np.array(self.joint_offset)
         self.joint_parent = bvh_util.get_parent_from_link(self.links)
@@ -211,6 +239,13 @@ class BaseMotionData(data.Dataset):
     def load_new_data(self, path):
         x = self.process_data(path)
         x_normed = self.norm_data(x)
+        x_normed = self.transform_new_data(x_normed)
+        #print(self.valid_idx, x_normed.shape[0], self.test_num_steps)
+        last_index = self.valid_idx[-1] if len(self.valid_idx)>1 else 0
+        new_idx = last_index + np.arange(0, x_normed.shape[0]-self.rollout)
+        self.valid_idx = np.concatenate([self.valid_idx, new_idx])
+        self.motion_flattened = np.asarray(self.motion_flattened).reshape(-1, self.frame_dim)
+        self.motion_flattened = np.concatenate([self.motion_flattened,x_normed],axis=0)
         return x_normed
     
     def transform_new_data(self, data):
@@ -241,12 +276,14 @@ class BaseMotionData(data.Dataset):
     
     def transform_data_flattened(self, data, std, avg):
         num_frame = data.shape[0]
-        self.joint_dim_lst = []
-        self.vel_dim_lst = []
-        self.angle_dim_lst = []
-        self.offset_dim_lst = []
-        self.dxdydr_dim_lst = [0,self.data_root_dim]
-
+        self.joint_dim_lst = [] #feature dim where local joint locations are stored
+        self.vel_dim_lst = [] #feature dim where local joint velocity are stored
+        self.angle_dim_lst = [] #feature dim where local joint rotation are stored
+        self.offset_dim_lst = [] #feature dim where skeleton offset are stored
+        self.data_root_dim  = self.data_root_rot_dim + self.data_root_linear_dim
+        #self.dxdy_dim_lst = [0,2] #feature dim of root planar linear velocity
+        self.dxdydr_dim_lst = [0, self.data_root_dim] #feature dim of root planar linear velocity & root angular velocity
+        
         if self.data_component[0] == 'angle':
             data_piece = [data[...,:self.data_root_dim],data[...,[self.data_root_dim+1]]]
             std_piece = [std[...,:self.data_root_dim],std[...,[self.data_root_dim+1]]]
@@ -258,11 +295,13 @@ class BaseMotionData(data.Dataset):
             data_piece = [data[...,:self.data_root_dim]]
             std_piece = [std[...,:self.data_root_dim]]
             avg_piece = [avg[...,:self.data_root_dim]]
-            idx = self.data_root_dim
+            idx = self.data_root_dim 
             self.height_index = self.data_root_dim+1
-
+        
         for comp in self.data_component:
+            print(idx, comp, idx+self.num_jnt*3)
             if comp == 'position':
+                
                 self.joint_dim_lst = [idx, idx+self.num_jnt*3]
                 data_piece.append(data[...,idx:idx+self.num_jnt*3])
                 std_piece.append(std[...,idx:idx+self.num_jnt*3])
@@ -320,7 +359,9 @@ class BaseMotionData(data.Dataset):
     
     def get_height(self,data):
         return data[:, self.height_index]
-
+    
+    def get_root_linear_planar_vel(self,data):
+        return data[:, :self.data_root_linear_dim]
    
     def read_label_data(self, path):
         if self.use_cond:
@@ -636,7 +677,7 @@ class BaseMotionData(data.Dataset):
             dr, _ = geo_util.sepr_rot_heading(m6d)
         else:
             dr = x[...,self.data_root_linear_dim]
-            
+       
         if mode == 'angle':
             jnts = self.fk_local_seq(x) 
         elif mode == 'position':

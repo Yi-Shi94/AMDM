@@ -5,7 +5,7 @@ from tqdm import tqdm
 import model.trainer_base as trainer_base
 
 class AMDMTrainer(trainer_base.BaseTrainer):
-    NAME = 'AMDM'
+    NAME = 'AMDM_TEXT'
     def __init__(self, config, dataset, device):
         super(AMDMTrainer, self).__init__(config, dataset, device)
         optimizer_config = config['optimizer']

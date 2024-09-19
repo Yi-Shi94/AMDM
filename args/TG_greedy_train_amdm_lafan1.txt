@@ -4,9 +4,9 @@
 --model_path output/base/amdm_lafan1_2/model_param.pth
 --agent_config config/agents/ppo.yaml
 
---env_config  config/envs/target_amdm.yaml
---int_output_dir output/target/amdm_lafan1_2/
---out_model_file output/target/amdm_lafan1_2/policy_model.pth
+--env_config  config/envs/targetgreedy_amdm.yaml
+--int_output_dir output/targetgreedy/amdm_lafan1_2/
+--out_model_file output/targetgreedy/amdm_lafan1_2/policy_model.pth
 
 
 --device cuda:0

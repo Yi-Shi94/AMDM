@@ -481,7 +481,7 @@ def recover_from_ric(data, joints_num, abs_3d=False):
     '''Add root XZ to joints'''
     positions[..., 0] += r_pos[..., 0:1]
     positions[..., 2] += r_pos[..., 2:3]
-
+    
     '''Concate root and joints'''
     positions = torch.cat([r_pos.unsqueeze(-2), positions], dim=-2)
 

@@ -43,11 +43,14 @@ optimizer:
 data:   
     load_cache: True 
     dataset_name: "HumanML3D"
+    dataset_class_name: "HumanML3D_TEXT"
     path: "./data/HumanML3D/new_joint_vecs"
-    dataset_class_name: "HumanML3D_ORG"
+    text_path: "./data/HumanML3D/texts"
     train_split: "./data/HumanML3D/train.txt"
     val_split: "./data/HumanML3D/val.txt"
     test_split: "./data/HumanML3D/test.txt"
+
+
     data_fps: 30
     root_rot_offset: 180
     min_motion_len: 0

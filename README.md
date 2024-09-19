@@ -8,7 +8,7 @@
 [paper](https://arxiv.org/html/2306.00416v2) | [demo]() | [video](https://www.youtube.com/watch?v=5WE9hy0xCI4&ab_channel=YISHI) | [poster]()
 
 ## Implementation of Auto-regressive Motion Diffusion Model (A-MDM)
-We implemented a PyTorch framework for kinematic-based auto-regressive models. Our framework supports training and inference for A-MDM. Additionally, it offers real-time inpainting and reinforcement learning-based interactive control tasks. Feel free to leave any question regarding A-MDM in ISSUE or via my email. 
+We have implemented a PyTorch framework for kinematic-based auto-regressive models, supporting both training and inference for A-MDM. Our framework also includes features for real-time inpainting and reinforcement learning-based interactive control tasks. If you have any questions regarding A-MDM, please feel free to leave a message.
 
 ## Dataset Preparation
 ### LaFAN1:
@@ -22,7 +22,7 @@ We didn't include files with a prefix of 'obstacle'
 Download and extract under ```./data/``` directory. Create a yaml config file in ```./config/model/```, 
 
 ### AMASS:
-Follow the procedure described in the repo of [HuMoR](https://github.com/davrempe/humor)
+Follow the procedure described in the repo of [HuMoR](https://github.com/davrempe/humor) 
 
 ### HumanML3D:
 Follow the procedure described in the repo of [HumanML3D](https://github.com/EricGuo5513/HumanML3D.git) 
@@ -85,8 +85,8 @@ pip install -r requirement.txt
 ```
 
 ### Update
-1. July 28 2024, repo releaserd
-2. upcoming, weight upload 
+1. July 28 2024, repo released
+2. upcoming, weight upload for 100STYLE & HumanML3D
 
 
 ## Acknowledgement

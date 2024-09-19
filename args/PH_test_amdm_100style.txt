@@ -1,0 +1,14 @@
+
+--model_config output/base/amdm_100style/config.yaml
+--model_path output/base/amdm_100style/model_param.pth
+
+--int_output_dir output/path/amdm_100style/
+--env_config output/path/amdm_100style/path_amdm.yaml
+--agent_config output/path/amdm_100style/ppo.yaml
+--controller_path output/path/amdm_100style/policy_model.pth
+
+--test_motion_file data/100STYLE/Chicken/Chicken_BW.bvh
+
+--device cuda:0
+--mode test
+--master_port 0

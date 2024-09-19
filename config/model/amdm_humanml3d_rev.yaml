@@ -44,7 +44,7 @@ data:
     load_cache: True 
     dataset_name: "HumanML3D"
     path: "./data/HumanML3D/new_joint_vecs"
-    dataset_class_name: "HumanML3D_ORG"
+    dataset_class_name: "HumanML3D_REV"
     train_split: "./data/HumanML3D/train.txt"
     val_split: "./data/HumanML3D/val.txt"
     test_split: "./data/HumanML3D/test.txt"

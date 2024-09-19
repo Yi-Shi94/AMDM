@@ -131,10 +131,7 @@ class TargetEnv(base_env.EnvBase):
         num_frame_used = len(self.valid_idx)
         num_init = self.num_parallel if frame_index is None else len(frame_index)
 
-        #ensor([[537085]]) ==================
-        #tensor([[2122372]]) ==================
-        
-        start_index = torch.randint(0,num_frame_used-1,(num_init,1))#2122372 #torch.randint(0,num_frame_used-1,(num_init,1)) 
+        start_index = torch.randint(0,num_frame_used-1,(num_init,1))
         start_index = self.valid_idx[start_index]
 
         data = torch.tensor(self.dataset.motion_flattened[start_index])
@@ -162,53 +159,11 @@ class TargetEnv(base_env.EnvBase):
                 self.target[:, 1].index_copy_(dim=0, index=indices, source=new_widths)
             
             
-            
-            
         else:
             # Reaches this branch only with mouse click in render mode
             self.target[:, 0] = location[0]
             self.target[:, 1] = location[1]
         
-        """ targets_lst =torch.tensor([[-5.0,10.0],
-                      [ 5.0, 6.0],
-                      [ 2.0, 2.0],
-                      [1,1],[5,5],[1,1],[6,6],[0,0],[0,5], #], device=self.device)
-                      [ -12.2380, -5.6012],
-                      [-5.2380, -10],
-                      [3,-11],
-                      [5,-10],
-                      [10,5],
-                      [0,0]
-                      ]).to(self.device)
-
-        self.target = targets_lst[None,self.index_of_target]   """
-        
-        #print(self.target.device)
-        # l = np.random.uniform(*self.arena_length)
-        # w = np.random.uniform(*self.arena_width)
-        # self.target[:, 0].fill_(0)
-        # self.target[:, 1].fill_(100)
-
-        # set target to be in front
-        # facing_delta = self.root_facing.clone().uniform_(-np.pi / 2, np.pi / 2)
-        # angle = self.root_facing + facing_delta
-        # distance = self.root_facing.clone().uniform_(20, 60)
-        # self.target[:, 0].copy_((distance * angle.cos()).squeeze(1))
-        # self.target[:, 1].copy_((distance * angle.sin()).squeeze(1))
-
-        # Getting image
-        # facing_delta = self.root_facing.clone().fill_(-np.pi / 6)
-        # angle = self.root_facing + facing_delta
-        # distance = self.root_facing.clone().fill_(40)
-        # self.target[:, 0].copy_((distance * angle.cos()).squeeze(1))
-        # self.target[:, 1].copy_((distance * angle.sin()).squeeze(1))
-    
-        #if self.is_rendered:    
-        #    self.flag_pos.append([self.target[:,0],self.target[:,1]])
-        #    if self.plot_frame_idx>0:
-        ##        self.flag_ed = self.plot_frame_idx
-        #        self.flag_sted.append([self.flag_st,self.flag_ed]) 
-        #        self.flag_st = self.plot_frame_idx+1
         if self.is_rendered:
             self.target_arr[...,self.index_of_target,:2] = self.target[:, :2]#.detach().cpu().numpy()
             self.target_arr[...,self.index_of_target,2] = self.timestep
@@ -244,10 +199,7 @@ class TargetEnv(base_env.EnvBase):
         #foot_slide_penalty = self.calc_foot_slide().sum(dim=-1)
        
         target_dist = -self.linear_potential
-        target_is_close = target_dist < 0.7
-
-        #progress = 15*torch.exp(-target_dist)
-        
+        target_is_close = target_dist < 1.0
         
         if is_external_step:
             self.reward.copy_(progress)
@@ -255,26 +207,11 @@ class TargetEnv(base_env.EnvBase):
             self.reward.add_(progress)
 
         self.reward.add_(target_is_close.float() * 20.0)
-        #self.reward.add_(-foot_slide_penalty.sum().float()*0.0001)
-        #energy_penalty = self.calc_action_penalty_reward()
-        #print(energy_penalty /(max(1,self.penalty_sat_step - self.timestep)), self.timestep)
-        #if w is not None:
-        
-            #self.reward.add_(-1*w.mean().item())
-
-        #print(self.reward.shape,next_frame.shape,next_frame[...,0].shape)
-        
-        #backward_penalty = -1.0*(next_frame[...,:1] > 0) 
-        #self.reward.add_(energy_penalty)
-        # action_penalty = self.calc_action_penalty()
-        # self.reward.add_(action_penalty)
 
         if target_is_close.any():
             reset_indices = self.parallel_ind_buf.masked_select(
                 target_is_close.squeeze(1)
             )
-            
-            #self.end_steps += torch.sum(self.steps_parallel[reset_indices.cpu().detach()])
             
             self.reset_target(indices=reset_indices)
             #self.steps_parallel[reset_indices.cpu().detach()] *= 0

@@ -10,17 +10,18 @@ frame_skip: 1
 #text: ['sidestep', 'forward', 'backward', 'stand still',',']
 
 #AMDM
-action_scale: 0.95 #0.95 during training
+action_scale: 1.0 #0.95 during training
 random_scale: 1.0
 
-test_action_scale: 0.95
-test_random_scale: 0.0
+test_action_scale: 0.8
+test_random_scale: 1
+clip_scale: 2.5
 
 model_type: 'amdm'
 
-action_rgr_step: [5,4,3]
+action_rgr_step: [4,3,2]
 action_mode: 'full' #epsilon, locomotion
-action_step: [24,23,22,21,20,18,16,14,12,10,8,7,5,4,3]
+action_step: [14,13,12,11,10,9,8,7,6,5,4,3,2]
 
 #HUMOR
 #action_scale: 3

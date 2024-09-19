@@ -41,7 +41,7 @@ class JoystickEnv(target_env.TargetEnv):
 
             if self.timestep % speed_switch_every == 0:
                 # in training mode, we have tensors
-                choices = torch.linspace(-2, 6, 120).to(self.device)
+                choices = torch.linspace(0, 6, 120).to(self.device)
                 sample = torch.randint(0, choices.size(0), (self.num_parallel, 1))
                 self.target_speed_buf.copy_(choices[sample])
             
@@ -51,28 +51,28 @@ class JoystickEnv(target_env.TargetEnv):
 
         else:
              
-            if self.timestep < 40:
+            if self.timestep < 100:
                 self.target_speed = 1.0
                 self.target_direction = 0
 
-            elif self.timestep < 120:
-                self.target_speed = 2.0
-                self.target_direction = np.pi/4
-            
-            #elif self.timestep < 420:
-            #    self.target_speed = 2.0 + (self.timestep-600)/360 * 3
-            #    self.target_direction = np.pi/2 + (self.timestep-120)/180 * np.pi
-
             elif self.timestep < 200:
+                self.target_speed = 2.0
+                self.target_direction = np.pi/2
+            
+            elif self.timestep < 360:
+                self.target_speed = 2.0 + (self.timestep-200)/360
+                self.target_direction = np.pi/2 + (self.timestep-200)/420 * np.pi
+
+            elif self.timestep < 420:
                 self.target_speed = 3.0
                 self.target_direction = -np.pi/2
 
-            elif self.timestep < 300:
+            elif self.timestep < 650:
                 self.target_speed = 3.0
                 self.target_direction = -np.pi/3
             else:
-                self.target_speed = -2.0
-                self.target_direction = np.pi
+                self.target_speed = 2.0
+                self.target_direction = -np.pi/3
             #self.target_direction -= np.pi/2
             self.target.copy_(self.root_xz)
             self.joystick_arr[:,self.timestep,0] = self.target_speed 

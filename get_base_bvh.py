@@ -70,19 +70,19 @@ if __name__ == '__main__':
     #data_file_name = './data/100STYLE/Depressed/Depressed_BW.bvh'
     #start_index = 322 #   
     
-    data_file_name = 'data/LAFAN1_tpose/dance1_subject1.bvh'
+    data_file_name = 'data/LAFAN1/dance1_subject1.bvh'
     start_index = 3188 #cartwheel
 
-    step_default = 400
-    num_trial_default = 5
-    model_name = 'amdm_lafan1'
+    step_default = 1000
+    num_trial_default = 20
+    model_name = 'amdm_lafan1_5'
 
     
     par_path = 'output/base/'
     model_config_file = '{}/{}/config.yaml'.format(par_path, model_name)
    
 
-    state_dict = torch.load('{}/{}/model_param2.pth'.format(par_path,model_name))
+    state_dict = torch.load('{}/{}/model_param.pth'.format(par_path,model_name))
     out_path = '{}/{}/{}_{}step_intro'.format(par_path, model_name, start_index, step_default)  
     
     

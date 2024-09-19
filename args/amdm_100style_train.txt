@@ -1,0 +1,9 @@
+--model_config config/model/amdm_100style.yaml
+--log_file output/base/amdm_100style/log.txt
+
+--int_output_dir output/base/amdm_100style/
+--out_model_file output/base/amdm_100style/model_param.pth
+
+--mode train
+--master_port 0
+--rand_seed 122

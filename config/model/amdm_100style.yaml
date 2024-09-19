@@ -5,11 +5,11 @@ diffusion:
     estimate_mode: "epsilon"
     loss_type: "l1"
     noise_schedule_mode: "cosine"
-    T: 20
-    eval_T: 20
+    T: 25
+    eval_T: 25
 
 model_hyperparam:
-    layer_num: 20
+    layer_num: 15
     #cond_mask_prob: 0
     #cond_emb_size: 256 #condition frame for [class, text, etc]
     time_emb_size: 128 #time embediing
@@ -22,10 +22,10 @@ model_hyperparam:
 optimizer:
     consistency_on: False
     consist_loss_weight: 0
-    anneal_times: 50
-    initial_lr: 0.0005
+    anneal_times: 300
+    initial_lr: 0.001
     final_lr: 0.0000005
-    initial_teacher_epochs: 3000
+    initial_teacher_epochs: 1400
     end_teacher_epochs: 100 
     teacher_epochs: 4
     ramping_epochs: 0
@@ -33,7 +33,7 @@ optimizer:
     peak_student_rate: 1
     mini_batch_size: 4096
     full_T: False
-    rollout: 5
+    rollout: 3
     EMA:    
         ema_decay: 0.99
         ema_start: 5000
@@ -42,12 +42,9 @@ optimizer:
 
 data:   
     load_cache: True 
-    dataset_name: "HumanML3D"
-    path: "./data/HumanML3D/new_joint_vecs"
-    dataset_class_name: "HumanML3D_ORG"
-    train_split: "./data/HumanML3D/train.txt"
-    val_split: "./data/HumanML3D/val.txt"
-    test_split: "./data/HumanML3D/test.txt"
+    dataset_name: "STYLE100"
+    path: "./data/100STYLE/"
+    dataset_class_name: "STYLE100"
     data_fps: 30
     root_rot_offset: 180
     min_motion_len: 0
@@ -55,11 +52,11 @@ data:
     data_trim_begin: 0
     data_trim_end: -1
     data_rot_repr: 6d
-    data_component: [position]
+    data_component: [position, velocity, angle]
 
     
 test:
-    test_interval: 50
-    test_num_steps: 90
-    test_num_trials: 5
-    test_num_init_frame: 5 
+    test_interval: 100
+    test_num_steps: 60
+    test_num_trials: 3
+    test_num_init_frame: 1

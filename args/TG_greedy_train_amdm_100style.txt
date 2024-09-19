@@ -1,0 +1,15 @@
+
+
+--model_config output/base/amdm_100style/config.yaml
+--model_path output/base/amdm_100style/_ep800.pth
+--agent_config config/agents/ppo.yaml
+
+--env_config  config/envs/targetgreedy_amdm.yaml
+--int_output_dir output/targetgreedy/amdm_100style/
+--out_model_file output/targetgreedy/amdm_100style/policy_model.pth
+
+
+--device cuda:0
+--mode train
+--master_port 0
+--rand_seed 0 

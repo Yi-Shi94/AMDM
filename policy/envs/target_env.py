@@ -30,7 +30,6 @@ class TargetEnv(base_env.EnvBase):
         self.num_future_predictions = 1
         self.num_condition_frames = 1
         
-        self.penalty_sat_step = 120000000
         target_dim = 2
         
         self.target = torch.zeros((self.num_parallel, target_dim)).to(self.device)
@@ -68,8 +67,8 @@ class TargetEnv(base_env.EnvBase):
             self.root_facing.fill_(0)
             self.root_xz.fill_(0)
             self.reward.fill_(0)
-            self.timestep = 0
-            self.substep = 0
+            self.timestep.fill_(0)
+            self.substep.fill_(0)
             self.done.fill_(False)
 
             self.reset_target()
@@ -79,6 +78,9 @@ class TargetEnv(base_env.EnvBase):
             self.root_xz.index_fill_(dim=0, index=indices, value=0)
             self.reward.index_fill_(dim=0, index=indices, value=0)
             self.done.index_fill_(dim=0, index=indices, value=False)
+            self.timestep.fill_(0)
+            self.substep.fill_(0)
+            
             self.reset_target(indices)
 
         obs_components = self.get_observation_components()

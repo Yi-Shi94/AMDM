@@ -17,7 +17,7 @@ eps: 0.00000001
 lr_decay_type: "exponential"
 mini_batch_size: 1024
 save_interval: 20
-actor_reg_weight: 2
+actor_reg_weight: 1
 actor_bound_weight: 0.0
 
 distr_type: fixed #adaptive #adaptive,fixed
