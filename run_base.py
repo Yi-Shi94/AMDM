@@ -54,8 +54,8 @@ def train(trainer, model, out_model_file, int_output_dir, log_file):
                       int_output_dir=int_output_dir, log_file=log_file)
     return
 
-def build_dataset(config):
-    dataset = dataset_builder.build_dataset(config)
+def build_dataset(config, load_full_dataset):
+    dataset = dataset_builder.build_dataset(config, load_full_dataset)
     return dataset
 
 def evaluate(trainer, model):
@@ -96,7 +96,7 @@ def run(rank, num_procs, args):
     
     trainer = build_trainer(model_config_file, device)
     model = build_model(model_config_file, trainer.dataset, device)
-    dataset = build_dataset(model_config_file)
+    dataset = build_dataset(model_config_file, load_full_dataset = True)
     if (trained_model_path != ""):
         try:
             model = model_builder.build_model(model_config_file, dataset, device)

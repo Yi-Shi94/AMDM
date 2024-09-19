@@ -6,32 +6,40 @@ import dataset.util.plot as plot_util
 
 def get_data_from_dataset():
     #config_file = 'config/model/amdm_lafan1_single.yaml'
-    config_file = 'config/model/amdm_lafan1.yaml'
+    #config_file = 'config/model/amdm_100style.yaml'
     #config_file = 'output/base/amdm_lafan1/config.yaml'
-    dataset = dataset_builder.build_dataset(config_file)
-    #dataset.motion_flattened = dataset.load_new_data()
 
-    num_frame = 300
-    data_frames = np.zeros((num_frame, dataset.frame_dim))
-    # FK: https://github.com/facebookresearch/fairmotion/blob/main/fairmotion/data/bvh.py
-    for i in range(num_frame): 
-        # 代码 dataset.util.bvh
+    config_file = 'output/base/amdm_humanml3d/config.yaml'
+    dataset = dataset_builder.build_dataset(config_file, load_full_dataset=False)
+    
+    #data_file_name = 'data/100STYLE/OnHeels/OnHeels_FW.bvh' #'data/LAFAN1/dance1_subject1.bvh'
+    data_file_name = 'data/HumanML3D/new_joint_vecs/009040.npy'
+    # starting index:
+    start_frame_index = 0 #3188 #cartwheel
+    num_frame = 200
+    normed_data = dataset.load_new_data(data_file_name)
+    start_x = normed_data[start_frame_index]
+    
+    print(normed_data.shape, start_x.shape)
+
+    #data_frames = np.zeros((num_frame, dataset.frame_dim))
+    #for i in range(num_frame): 
         #data_frames[i][1:,2] = rad_root 
         #data_frames[i][1:,:2] = dxdy_root 
         #data_frames[i][:,3:3+3*njoint] = joint_positions 
         #data_frames[i][1:,3+3*njoint:3+6*njoint] = joint_velocities  
         #data_frames[i][:,3+6*njoint:3+12*njoint] = joint_orientations 
-        data_frames[i] = dataset[i][0]
+        #data_frames[i] = dataset[i]
     
-    data_frames_denormalized = dataset.denorm_data(data_frames) #代码 dataset.base_dataset.denorm_data
-    #data_frames_denormalized是[Frame * X]的数组 
+    data_frames_denormalized = dataset.denorm_data(normed_data) #dataset.base_dataset.denorm_data
+    
 
     data_frames_jnts_position0 = dataset.x_to_jnts(data_frames_denormalized, mode='position') #代码 dataset.base_dataset.lafan1_dataset.x_to_jnts
     print("joint:")
     plot_util.plot_lafan1(data_frames_jnts_position0, dataset.links)
     
     #FK 
-    data_frames_jnts_position1 = dataset.x_to_jnts(data_frames_denormalized, mode='angle') #FK  dataset.base_dataset.lafan1_dataset.x_to_jnts
+    data_frames_jnts_position1 = dataset.x_to_jnts(data_frames_denormalized, mode='angle') #dataset.base_dataset.lafan1_dataset.x_to_jnts
     print("fk:")
     plot_util.plot_lafan1(data_frames_jnts_position1, dataset.links)
 

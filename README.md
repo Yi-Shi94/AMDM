@@ -61,33 +61,45 @@ Temporary Visualization is saved in --int_output_dir
 python run_env.py --arg_file args/RP_amdm_DATASET.txt
 ```
 
-#### Inpainting
+### Inpainting
 ```
 python run_env.py --arg_file args/PI_amdm_DATASET.txt
 ```
 
-### High-Level Controller
+## High-Level Controller
 
 
-#### Training
+### Training
 ```
 python run_env.py --arg_file args/ENV_train_amdm_DATASET.txt
 ```
-#### Inference
+### Inference
 ```
 python run_env.py --arg_file args/ENV_test_amdm_DATASET.txt
 ```
 
-### Installation
+## Installation
 ```
 conda create -n amdm python=3.7
 pip install -r requirement.txt
 ```
+<<<<<<< HEAD
 
 ### Update
 1. July 28 2024, repo released
 2. upcoming, weight upload for 100STYLE & HumanML3D
 
+=======
+## For users wish to create more variants given a mocap dataset
+1. Train the base model
+2. Follow the main function in gen_base_bvh.py, you can generate bvh files of multiple diverse motion given any starting pose:
+[![](https://markdown-videos-api.jorgenkh.no/youtube/DniQWu_4Kag)](https://youtu.be/DniQWu_4Kag)
+
+
+## Update
+1. July 28 2024, framework released, supported LAFAN1
+2. upcoming, checkpoint upload and support for more dataset
+>>>>>>> 825c6b1 (dataset update)
 
 ## Acknowledgement
 The RL related modules are built using existing code base of [MotionVAE](https://github.com/electronicarts/character-motion-vaes)

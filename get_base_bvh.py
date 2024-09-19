@@ -1,5 +1,7 @@
 import os
 import torch
+
+import time
 import numpy as np
 import dataset.dataset_builder as dataset_builder
 import os.path as osp
@@ -27,8 +29,11 @@ def gen_bvh(model_config_file, model_state_path, out_path, data_file_name, start
     normed_data = dataset.load_new_data(data_file_name)
     
     start_x = torch.tensor(normed_data[start_frame_index]).to(device).float()
-
+    start = time.time()
     gen_seq = model.eval_seq(start_x, None, step_default, num_trial_default)
+    end = time.time()
+    print(end - start)
+
     nan_mask = ~torch.isnan(gen_seq)
     nan_mask = nan_mask.prod(dim=-1)
     nan_mask = torch.cumsum(nan_mask, dim=-1)
@@ -70,20 +75,33 @@ if __name__ == '__main__':
     #data_file_name = './data/100STYLE/Depressed/Depressed_BW.bvh'
     #start_index = 322 #   
     
-    data_file_name = 'data/LAFAN1/dance1_subject1.bvh'
-    start_index = 3188 #cartwheel
+    # file name:
+    data_file_name = './data/100STYLE/BeatChest/BeatChest_FR.bvh'#'data/LAFAN1/dance1_subject1.bvh'
+    # starting index:
+    start_index = 1500 #3188 #cartwheel
 
+<<<<<<< HEAD:get_base_bvh.py
     step_default = 1000
     num_trial_default = 20
     model_name = 'amdm_lafan1_5'
+=======
+    # num of frames:
+    step_default = 1000
+>>>>>>> 825c6b1 (dataset update):gen_base_bvh.py
 
-    
+    # num of clips
+    num_trial_default = 6
+
+    # path of your checkpoint directory
+    model_name = 'amdm_100style' #'amdm_100style' #
     par_path = 'output/base/'
     model_config_file = '{}/{}/config.yaml'.format(par_path, model_name)
    
-
     state_dict = torch.load('{}/{}/model_param.pth'.format(par_path,model_name))
+    
+    # save bvhs under your 
     out_path = '{}/{}/{}_{}step_intro'.format(par_path, model_name, start_index, step_default)  
     
-    
     gen_bvh(model_config_file, state_dict, out_path, data_file_name, start_index, num_trial_default, step_default)
+    
+    

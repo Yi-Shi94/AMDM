@@ -12,12 +12,13 @@ class HumanML3D(humanml3d_dataset.HumanML3D):
     NAME = 'HumanML3D_TEXT'
     def __init__(self, config):
         self.text_path = config['data']['text_path']
-        self.text_emb_model = None
+        self.text_emb_model_path = config['model']['model_path']
+        self.text_emb_model = self.init_emb_model(self.text_emb_model_path)
         super().__init__(config)
 
-    def init_emb_model(self):
+    def init_emb_model(self, path):
         pass
-    
+
     def load_text_from_split(self, split_file):
         texts = []
         with open(split_file) as f:

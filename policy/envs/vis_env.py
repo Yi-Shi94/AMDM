@@ -23,8 +23,7 @@ class DataVisEnv(gym.Env):
         self.frame_dim = dataset.frame_dim
         self.data_fps = dataset.fps
         self.sk_dict = dataset.skel_info
-        print(self.data_fps)
-        
+       
         self.links = self.dataset.links
         self.valid_idx = self.dataset.valid_idx
         self.valid_range = self.dataset.valid_range

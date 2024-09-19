@@ -66,23 +66,19 @@ def train(agent, out_model_file, int_output_dir):
                       int_output_dir=int_output_dir)
     return
 
-def test(agent):
-    agent.test_controller()
-    return 
 
 def evaluate(agent):
     agent.evaluate_controller()
     return 
 
+
+def test(agent):
+    agent.test_controller()
+    return 
+
 def test_no_agent(env):
-    seed_n = 0
 
     env.reset()
-    env.seed(seed_n)
-
-    torch.manual_seed(seed_n)
-    torch.cuda.manual_seed(seed_n)
-    
     env.reset_initial_frames()
     with EpisodeRunner(env) as runner:
         while not runner.done:
@@ -122,7 +118,10 @@ def copy_config_file(config_file, output_dir):
 def run(rank, num_procs, args):
     mode = args.parse_string("mode", "train")
     device = args.parse_string("device", 'cuda:0')
+    
     test_motion_file = args.parse_string("test_motion_file", "")
+    test_motion_frame = args.parse_string("test_motion_frame", "")
+
     out_model_file = args.parse_string("out_model_file", "")
     trained_model_path = args.parse_string("model_path", "")
     int_output_dir = args.parse_string("int_output_dir", "")
@@ -138,19 +137,35 @@ def run(rank, num_procs, args):
     create_output_dirs(out_model_file, int_output_dir)
     out_model_dir = os.path.dirname(out_model_file)
     
-    load_full_motion = mode == 'train' or test_motion_file != ""
+    load_full_motion = mode == 'train' or test_motion_file == ""
     dataset = build_dataset(model_config_file, load_full_motion)
     if test_motion_file != "":
+        print('Loading test file:', test_motion_file)
         normed_motion = dataset.load_new_data(test_motion_file)
+        
+        if test_motion_frame != "":
+            test_motion_frame = int(test_motion_frame)
+            normed_motion = normed_motion[test_motion_frame,:].reshape(-1, normed_motion.shape[-1])
+            
         dataset.motion_flattened = normed_motion
         dataset.valid_range = [0,dataset.motion_flattened.shape[0]]
         dataset.valid_idx = np.arange(0,dataset.motion_flattened.shape[0])
+    
+    else:
+        if test_motion_frame != "":
+            test_motion_frame = int(test_motion_frame)
+            dataset.motion_flattened = dataset.motion_flattened[test_motion_frame].reshape(-1, dataset.motion_flattened.shape[-1])
+            dataset.valid_range = [0,dataset.motion_flattened.shape[0]]
+            dataset.valid_idx = np.arange(0,dataset.motion_flattened.shape[0])
+
     if trained_model_path:
         try:
+            print('Loading model param:{}\n model config:{}'.format(trained_model_path, model_config_file))
             model = model_builder.build_model(model_config_file, dataset, device)
             state_dict = torch.load(trained_model_path)
             model.load_state_dict(state_dict)
         except:
+            print('Loading model: {}'.format(trained_model_path))
             model = torch.load(trained_model_path)
         
         model.to(device)
@@ -177,7 +192,7 @@ def run(rank, num_procs, args):
     else:   
         env = build_env(env_config_file, int_output_dir, model, dataset, 'test', device)
         agent = None
-
+    
     if (mode == "train"):
         assert agent is not None, "require a controller & a agent"
         copy_config_file(agent_config_file, out_model_dir)
