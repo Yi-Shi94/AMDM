@@ -1,9 +1,10 @@
 --model_config config/model/amdm_humanml3d.yaml
 --log_file output/base/amdm_humanml3d1/log.txt
 
---int_output_dir output/base/amdm_humanml3d1/
---out_model_file output/base/amdm_humanml3d1/model_param.pth
+--int_output_dir output/base/amdm_humanml3d1_cont/
+--out_model_file output/base/amdm_humanml3d1_cont/model_param.pth
+--model_path output/base/amdm_humanml3d1/model_param.pth
 
 --mode train
 --master_port 0
---rand_seed 122
+--rand_seed 0

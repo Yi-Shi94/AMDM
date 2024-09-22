@@ -6,4 +6,4 @@
 
 --mode train
 --master_port 0
---rand_seed 122
+--rand_seed 114514

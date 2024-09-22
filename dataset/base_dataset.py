@@ -87,10 +87,10 @@ class BaseMotionData(data.Dataset):
         self.file_lst = []
         
         self.extra = dict() # for labels and other multi-modal data (text & audio & video)
-        self.labels = list()
+        #self.labels = list()
 
         self.motion_flattened = list()
-        self.label_lst = list() # for labels and other multi-modal data (text & audio & video)
+        self.labels = list() # for labels and other multi-modal data (text & audio & video)
         
         self.valid_idx = []
         self.valid_range = list()
@@ -167,8 +167,7 @@ class BaseMotionData(data.Dataset):
                         continue
 
                     if self.use_cond:
-                        label = self.process_label(fname)
-                        self.labels.append(label)
+                        self.labels.extend(self.process_label(fname))
 
                     self.file_lst.append(fname)
                     
@@ -204,7 +203,7 @@ class BaseMotionData(data.Dataset):
                 self.motion_flattened, self.std, self.avg = self.transform_data_flattened(self.motion_flattened, self.std, self.avg)
 
                 np.savez(osp.join(self.path,'data.npz'), 
-                        motion_flattened = self.motion_flattened, file_lst= self.file_lst, valid_range = self.valid_range)
+                        motion_flattened = self.motion_flattened, file_lst= self.file_lst, valid_range = self.valid_range, labels = self.labels)
                 np.savez(osp.join(self.path,'stats.npz'), 
                             std = self.std, avg = self.avg, frame_dim = self.frame_dim, 
                             joint_offset = self.joint_offset, joint_names= self.joint_names, links = self.links, 
@@ -214,7 +213,9 @@ class BaseMotionData(data.Dataset):
                             vel_dim_lst = self.vel_dim_lst,
                             angle_dim_lst = self.angle_dim_lst,
                             offset_dim_lst = self.offset_dim_lst,
-                            height_index = self.height_index
+                            height_index = self.height_index,
+                            
+                            
                         )
             
     
@@ -362,14 +363,14 @@ class BaseMotionData(data.Dataset):
     
     def get_root_linear_planar_vel(self,data):
         return data[:, :self.data_root_linear_dim]
-   
-    def read_label_data(self, path):
-        if self.use_cond:
-            raise NotImplementedError("read_label_data: not implemented!")
-
+    
     def get_motion_fpaths(self, path):
         raise NotImplementedError("path_acq: not implemented!")
         
+    def process_label(self, path):
+        if self.use_cond:
+            raise NotImplementedError("read_label_data: not implemented!")
+
     def process_data(self, fname):
         '''
         take a path as input, output your customized data form

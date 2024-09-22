@@ -1,4 +1,4 @@
-model_name: "AMDM"
+model_name: "AMDM_TEXT"
 
 diffusion:
     sample_mode: "ddpm"
@@ -9,7 +9,7 @@ diffusion:
     eval_T: 20
 
 model_hyperparam:
-    layer_num: 20
+    layer_num: 18
     #cond_mask_prob: 0
     #cond_emb_size: 256 #condition frame for [class, text, etc]
     time_emb_size: 128 #time embediing
@@ -25,15 +25,15 @@ optimizer:
     anneal_times: 50
     initial_lr: 0.0005
     final_lr: 0.0000005
-    initial_teacher_epochs: 3000
-    end_teacher_epochs: 100 
-    teacher_epochs: 4
+    initial_teacher_epochs: 800
+    end_teacher_epochs: 150 
+    teacher_epochs: 0
     ramping_epochs: 0
-    student_epochs: 1
+    student_epochs: 10
     peak_student_rate: 1
     mini_batch_size: 4096
     full_T: False
-    rollout: 5
+    rollout: 3
     EMA:    
         ema_decay: 0.99
         ema_start: 5000
@@ -49,7 +49,7 @@ data:
     train_split: "./data/HumanML3D/train.txt"
     val_split: "./data/HumanML3D/val.txt"
     test_split: "./data/HumanML3D/test.txt"
-
+    text_model_path: "./lm/GIST-all-MiniLM-L6-v2"
 
     data_fps: 30
     root_rot_offset: 180

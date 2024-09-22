@@ -5,38 +5,50 @@
 </p>
 
 ## Links
-[paper](https://arxiv.org/html/2306.00416v2) | [demo]() | [video](https://www.youtube.com/watch?v=5WE9hy0xCI4&ab_channel=YISHI) | [poster]()
+[page](https://yi-shi94.github.io/amdm_page/) | [paper](https://arxiv.org/pdf/2306.00416v4) | [video](https://www.youtube.com/watch?v=5WE9hy0xCI4&ab_channel=YISHI) | [poster](https://docs.google.com/presentation/d/1KRxJh2ZoyV7dtKd25s_R4KGqslxCJyeqm5OGw24TKZU/edit?usp=sharing) | [slides](https://docs.google.com/presentation/d/1kA_LT9zi4nb7FbJjZGD_g692NfGSKbfXBuVEQxUEXAg/edit?usp=sharing)
 
 ## Implementation of Auto-regressive Motion Diffusion Model (A-MDM)
-We have implemented a PyTorch framework for kinematic-based auto-regressive models, supporting both training and inference for A-MDM. Our framework also includes features for real-time inpainting and reinforcement learning-based interactive control tasks. If you have any questions regarding A-MDM, please feel free to leave a message.
+We developed a PyTorch framework for kinematic-based auto-regressive motion generation models, supporting both training and inference. Our framework also includes implementations for real-time inpainting and reinforcement learning-based interactive control. If you have any questions about A-MDM, please feel free to reach out via ISSUE or email.
+
+
+## Update
+1. July 28 2024, framework released.
+2. Aug 24 2024, LAFAN1 15step checkpoint released. 
+3. Sep 5 2024, 100STYLE 25step checkpoint released. 
+4. Stay tuned for support for more dataset.
+
+
+## Checkpoints
+Download, unzip and merge with your output directory.
+
+[LAFAN1_15step](https://drive.google.com/file/d/1a3emD8C5hN4wbTuPYhI0WytSMCuGoLNs/view?usp=sharing)
+[100STYLE_25step](https://drive.google.com/file/d/1-ju_XW9JsHrBuLORl8-n7jJiry5C_3Fn/view?usp=sharing)
 
 ## Dataset Preparation
 ### LaFAN1:
 [Download](https://github.com/ubisoft/ubisoft-laforge-animation-dataset) and extract under ```./data/``` directory.
-We didn't include files with a prefix of 'obstacle'
+BEWARE: We didn't include files with a prefix of 'obstacle' in our experiments. 
 
 ### 100STYLE:
 [Download](https://www.ianxmason.com/100style/) and extract under ```./data/``` directory.
 
-### Any other BVH dataset:
+### Arbitrary BVH dataset:
 Download and extract under ```./data/``` directory. Create a yaml config file in ```./config/model/```, 
 
 ### AMASS:
-Follow the procedure described in the repo of [HuMoR](https://github.com/davrempe/humor) 
+Follow the procedure described in the repo of [HuMoR](https://github.com/davrempe/humor)
 
 ### HumanML3D:
 Follow the procedure described in the repo of [HumanML3D](https://github.com/EricGuo5513/HumanML3D.git) 
 
-
 ### Sanity Check:
-Specify your model config file in 
 ```
 python run_sanity_data.py
 ```
 
 ## Base Model
-### Training
 
+### Training
 ```
 python run_base.py --arg_file args/amdm_DATASET_train.txt
 ```
@@ -53,7 +65,7 @@ python run_base.py
 --master_port 0
 --rand_seed 122
 ```
-Temporary Visualization is saved in --int_output_dir
+Training time visualization is saved in --int_output_dir
 
 
 ### Inference
@@ -81,28 +93,19 @@ python run_env.py --arg_file args/ENV_test_amdm_DATASET.txt
 ## Installation
 ```
 conda create -n amdm python=3.7
+conda activate amdm
 pip install -r requirement.txt
+mkdir output && mkdir data
 ```
-<<<<<<< HEAD
 
-### Update
-1. July 28 2024, repo released
-2. upcoming, weight upload for 100STYLE & HumanML3D
-
-=======
 ## For users wish to create more variants given a mocap dataset
 1. Train the base model
-2. Follow the main function in gen_base_bvh.py, you can generate bvh files of multiple diverse motion given any starting pose:
+2. Follow the main function in gen_base_bvh.py, you can generate diverse motion given any starting pose:
 [![](https://markdown-videos-api.jorgenkh.no/youtube/DniQWu_4Kag)](https://youtu.be/DniQWu_4Kag)
 
 
-## Update
-1. July 28 2024, framework released, supported LAFAN1
-2. upcoming, checkpoint upload and support for more dataset
->>>>>>> 825c6b1 (dataset update)
-
 ## Acknowledgement
-The RL related modules are built using existing code base of [MotionVAE](https://github.com/electronicarts/character-motion-vaes)
+Part of the RL modules utilized in our framework are based on the existing codebase of [MotionVAE](https://github.com/electronicarts/character-motion-vaes), please cite their work if you find using RL to guide autoregressive motion generative models helpful to your research.
 
 ## BibTex
 ```

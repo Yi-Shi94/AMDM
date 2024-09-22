@@ -10,13 +10,12 @@ import dataset.dataset_builder as dataset_builder
 def build_trainer(config_file, device):
     model_config = load_config_file(config_file)
     model_name = model_config["model_name"]
-    #print(model_config)
     dataset = dataset_builder.build_dataset(config_file, load_full_dataset=True)
 
     print("Building {} trainer".format(model_name))
     if (model_name == amdm_model.AMDM.NAME):
         trainer = amdm_trainer.AMDMTrainer(config=model_config, dataset=dataset, device=device)
-    if (model_name == amdm_text_model.AMDM.NAME):
+    elif (model_name == amdm_text_model.AMDM.NAME):
         trainer = amdm_text_trainer.AMDMTrainer(config=model_config, dataset=dataset, device=device)
 
     else:
