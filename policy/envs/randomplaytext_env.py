@@ -5,17 +5,52 @@ import torch
 import numpy as np
 import gymnasium as gym
 
-class RandomPlayEnv(base_env.EnvBase):
-    NAME = "RandomPlay"
+import tkinter as tk
+from tkinter import messagebox
+import threading
+
+
+class Message_box:
+    def __init__(self):
+        self.user_input = ''
+        self.thread = threading.Thread(target=self.create_session, args=())
+        self.thread.start()
+
+    def create_session(self):
+        self.root = tk.Tk()
+        self.root.title("User Input")
+        self.label = tk.Label(self.root, text="Enter your description:")
+        self.label.pack(pady=10)
+        self.entry = tk.Entry(self.root, width=45)
+        self.entry.pack(pady=10)
+        button = tk.Button(self.root, text="Confirm", command=self.on_confirm)
+        button.pack(pady=10)
+        self.root.mainloop()
+
+    def on_confirm(self):
+        user_input = self.entry.get()  # Get input from the entry widget
+        if user_input:  # Check if input is not empty
+            print("Input Confirmed", f"You entered: {user_input}")
+            self.user_input = user_input
+        else:
+            messagebox.showwarning("Input Error", "Please enter something.")
+    
+    def quiry_current_text(self):
+        return self.user_input
+    
+    def end_session(self):
+        self.thread.join()
+        print('session terminated')
+
+
+class RandomPlayTextEnv(base_env.EnvBase):
+    NAME = "RandomPlayText"
     def __init__(self, config, model, dataset, device):
         self.device = device
         self.config = config
         self.model = model
         self.dataset = dataset
 
-        self.interative_text = False
-        self.cur_extra_info = None
-        self.updated_text = False
 
         self.links = self.dataset.links
         self.valid_idx = self.dataset.valid_idx
@@ -27,6 +62,15 @@ class RandomPlayEnv(base_env.EnvBase):
         self.data_fps = self.dataset.fps
 
         self.is_rendered = True
+
+        if self.is_rendered:
+            self.message_box = Message_box() 
+            self.text = ''
+            self.text_emb = torch.as_tensor(self.dataset.encode_text(self.text),device=device).unsqueeze(0)
+            self.sync_cur_text()
+            self.cur_extra_info = {"text_embeddings":self.text_emb}
+
+
         self.num_parallel = config.get('num_parallel',1)
         self.frame_skip = config.get('frame_skip',1)
         self.max_timestep = config.get('max_timestep',10000)
@@ -75,15 +119,36 @@ class RandomPlayEnv(base_env.EnvBase):
         condition = self.history[:, : self.num_condition_frames]
         return condition.view(condition.shape[0],-1)
     
+    def sync_cur_text(self):
+        use_input = self.message_box.quiry_current_text()
+
+        if use_input == '':
+            self.text_emb *= 0 
+
+        elif self.text != use_input:
+            self.text = use_input
+            self.text_emb = torch.as_tensor(self.dataset.encode_text(use_input),
+                                            device=self.device, dtype = self.text_emb.dtype).unsqueeze(0)
+            self.cur_extra_info["text_embeddings"] = self.text_emb
+        
+    def close(self):
+        if self.is_rendered:
+            self.viewer.close()
+            self.message_box.end_session()
 
     def get_next_frame(self, action=None):
+        if self.timestep % 30 == 0:
+            self.sync_cur_text()
+            print('Current_user_input:{}'.format(self.text))
+
         condition = self.get_cond_frame()
        
         with torch.no_grad():
             output = self.model.eval_step(condition, self.cur_extra_info)
-            #output = self.dataset.unify_rpr_within_frame(condition, output)
-        
+            
         return output
+    
+
     
     def reset(self):
         self.root_facing.fill_(0)

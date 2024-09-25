@@ -67,7 +67,7 @@ class AMDM(model_base.BaseModel):
             elif self.sample_mode == 'ddim':
                 next_x = diffusion.sample_ddim(cur_x, self.eval_T, 0.0, extra_dict)
             else:
-                assert(False), "Unsupported agent: {}".format(self.estimate_mode)
+                assert(False), "Unsupported estimate mode: {}".format(self.estimate_mode)
 
         if align_rpr:
             next_x = self.align_frame_with_angle(cur_x, next_x).type(cur_x.dtype)
@@ -459,8 +459,7 @@ class GaussianDiffusion(nn.Module):
         noise = torch.randn_like(next_x)
         perturbed_x = self.perturb_x(next_x, ts.clone(), noise)
         
-        latent = time_emb
-        estimated = self.model(cur_x, perturbed_x, latent)
+        estimated = self.model(cur_x, perturbed_x, time_emb)
         return estimated, noise, perturbed_x, ts
 
 

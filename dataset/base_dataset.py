@@ -145,16 +145,26 @@ class BaseMotionData(data.Dataset):
                 for i, fname in enumerate(tqdm.tqdm(file_paths)):
                     ret = self.process_data(fname)
                     if ret is None:
+                        print('Error loading file:{}'.format(fname))
                         continue
+                    
                     elif type(ret) is not tuple:
                         motion = ret
+
                     else:
-                        motion, motion_struct = ret
+                        # first instance must be motion and second instance must be motion class
+                        motion = ret[0]
+                        motion_struct = ret[1]
+
+                        # skeleton struct class not defined
                         if self.motion_struct is None:
                             self.motion_struct = motion_struct
-
-                        if self.use_offset is None:
+                        
+                        # when not using offset in feature, we define a universal joint offset for all motions
+                        if not self.use_offset:
                             self.joint_offset =  motion_struct._skeleton.get_joint_offset()
+                        
+                        # when using offset in feature, we record offset for each motion
                         else:
                             offset = motion_struct._skeleton.get_joint_offset()
                             self.joint_offset.append(offset)

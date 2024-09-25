@@ -164,21 +164,6 @@ class TargetEnv(base_env.EnvBase):
             self.target[:, 0] = location[0]
             self.target[:, 1] = location[1]
         
-        """ 
-        targets_lst =torch.tensor([[-5.0,10.0],
-                      [ 5.0, 6.0],
-                      [ 2.0, 2.0],
-                      [1,1],[5,5],[1,1],[6,6],[0,0],[0,5], #], device=self.device)
-                      [ -12.2380, -5.6012],
-                      [-5.2380, -10],
-                      [3,-11],
-                      [5,-10],
-                      [10,5],
-                      [0,0]
-                      ]).to(self.device) 
-        self.target = targets_lst[None,self.index_of_target]               
-        """
-        
 
         if self.is_rendered:
             self.target_arr[...,self.index_of_target,:2] = self.target[:, :2]#.detach().cpu().numpy()

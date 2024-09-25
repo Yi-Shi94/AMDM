@@ -486,6 +486,8 @@ def recover_from_ric(data, joints_num, abs_3d=False):
     positions = torch.cat([r_pos.unsqueeze(-2), positions], dim=-2)
 
     return positions
+
+
 '''
 For Text2Motion Dataset
 '''

@@ -26,10 +26,12 @@ class AMDM(model_base.BaseModel):
         
         self.T = config["diffusion"]["T"] 
         self.sample_mode = config["diffusion"]["sample_mode"]  
-        self.eval_T = config["diffusion"]["eval_T"] if self.sample_mode == 'ddim' else self.T #self.T
+        self.eval_T = config["diffusion"]["eval_T"] if self.sample_mode == 'ddim' else self.T
 
         self.frame_dim = dataset.frame_dim
         config['frame_dim'] = self.frame_dim
+        config["model_hyperparam"]['input_text_emb_dim'] = dataset.text_emb_dim
+        
         self._build_model(config)
 
         self.use_ema = config["optimizer"].get("EMA", False)
@@ -59,15 +61,14 @@ class AMDM(model_base.BaseModel):
         self.diffusion.to(self.device)
         return
 
-    def eval_step(self, cur_x, extra_dict=None, align_rpr=False, record_process=False): 
+    def eval_step(self, cur_x, extra_dict, align_rpr=False, record_process=False): 
         diffusion = self.ema_diffusion if self.use_ema else self.diffusion  
         with torch.no_grad():
             if self.sample_mode == 'ddpm':
-                next_x =  diffusion.sample_ddpm(cur_x, extra_dict, record_process)
-            elif self.sample_mode == 'ddim':
-                next_x = diffusion.sample_ddim(cur_x, self.eval_T, 0.0, extra_dict)
+                next_x =  diffusion.sample_ddpm(cur_x, extra_dict)
+           
             else:
-                assert(False), "Unsupported agent: {}".format(self.estimate_mode)
+                assert(False), "Unsupported estimate mode:{}".format(self.estimate_mode)
 
         if align_rpr:
             next_x = self.align_frame_with_angle(cur_x, next_x).type(cur_x.dtype)
@@ -86,6 +87,10 @@ class AMDM(model_base.BaseModel):
         
         if start_x.shape[0] == 1:
             start_x = start_x.expand(num_trials, -1)
+            #etxt_embeddings = extra_dict['text_embeddings'].expand(num_trials, -1)
+            cur_extra_dict = {}
+            for item in extra_dict:
+                cur_extra_dict[item] = extra_dict[item].expand(num_trials, -1)
         else:
             print('overwrite num of trial with actual batch size of start_x')
             num_trials = start_x.shape[0]
@@ -97,7 +102,7 @@ class AMDM(model_base.BaseModel):
 
         for j in range(num_steps):
             with torch.no_grad():
-                start_x = self.eval_step(start_x, extra_dict, align_rpr, record_process).detach()
+                start_x = self.eval_step(start_x, cur_extra_dict, align_rpr, record_process).detach()
             output_xs[:,j,...] = start_x 
             
             if record_process:
@@ -142,7 +147,6 @@ class AMDM(model_base.BaseModel):
             loss_diff = torch.nn.functional.l1_loss(estimated, target.squeeze())
 
         elif self.loss_type == 'l2':
-            #loss_diff = torch.sum(torch.square(target - estimated), dim=-1).mean()
             loss_diff = torch.nn.functional.mse_loss(estimated, target.squeeze())
        
         return loss_diff, pred_x0#.detach() 
@@ -184,18 +188,35 @@ class GaussianDiffusion(nn.Module):
         self.norm_type = config["model_hyperparam"]["norm_type"]
         self.act_type = config["model_hyperparam"]["act_type"]
         self.time_emb_dim = config["model_hyperparam"]["time_emb_size"]
+        self.input_text_emb_dim = config["model_hyperparam"]["input_text_emb_dim"]
+        self.text_emb_dim = config["model_hyperparam"]["text_emb_size"]
+
+        self.use_text_cfg = config["model_hyperparam"]["use_text_cfg"]
+        self.text_cfg_scale = config["model_hyperparam"]["text_cfg_scale"]
+        self.text_cfg_prob = config["model_hyperparam"]["text_cfg_prob"]
+
+        self.use_last_frame_cfg = config["model_hyperparam"]["use_last_frame_cfg"]
+        self.last_frame_cfg_scale = config["model_hyperparam"]["last_frame_cfg_scale"]
+        self.last_frame_cfg_prob = config["model_hyperparam"]["last_frame_cfg_prob"]
+
         self.hidden_dim = config["model_hyperparam"]["hidden_size"]
         self.layer_num = config["model_hyperparam"]["layer_num"]
         self.frame_dim = config['frame_dim']
-
-        self.model = NoiseDecoder(self.frame_dim, self.hidden_dim, self.time_emb_dim, self.layer_num, self.norm_type, self.act_type)
+        
+        self.model = NoiseDecoder(self.frame_dim, self.hidden_dim, self.text_emb_dim, self.time_emb_dim, self.layer_num, self.norm_type, self.act_type)
         self.time_mlp = torch.nn.Sequential(
             Embedding.PositionalEmbedding(self.time_emb_dim, 1.0),
             torch.nn.Linear(self.time_emb_dim, self.time_emb_dim),
             Activation.SiLU(),
             torch.nn.Linear(self.time_emb_dim, self.time_emb_dim),
         )
-        
+
+        self.cond_mlp = torch.nn.Sequential(
+            torch.nn.Linear(self.input_text_emb_dim, self.text_emb_dim),
+            Activation.SiLU(),
+            torch.nn.Linear(self.text_emb_dim, self.text_emb_dim),
+        )
+
         betas = self._generate_diffusion_schedule()
         alphas = 1. - betas
         alphas_cumprod = np.cumprod(alphas)
@@ -300,32 +321,45 @@ class GaussianDiffusion(nn.Module):
 
 
     @torch.no_grad()
-    def sample_ddpm(self, last_x, extra_info, record_process=False):
+    def sample_ddpm(self, last_x, extra_info):
+        b = last_x.shape[0]
+        device = last_x.device
+        dtype = last_x.dtype
+        x = torch.randn(last_x.shape[0], last_x.shape[-1]).to(device)
+        text_emb = torch.as_tensor(extra_info['text_embeddings'], device=device, dtype=dtype)
+        text_emb = self.cond_mlp(text_emb)
         
-        x = torch.randn(last_x.shape[0], last_x.shape[-1]).to(last_x.device)
-        #ce = None if self.use_cond else self.cond_mlp(extra_info['cond'])
-        if record_process:
-            x0s = torch.zeros(last_x.shape[0], self.T, last_x.shape[-1], device=last_x.device)  
-
         for t in range(self.T - 1, -1, -1):
             ts = torch.tensor([t], device = last_x.device).repeat(last_x.shape[0])
             te = self.time_mlp(ts)
 
-            pred = self.model(last_x, x, te).detach()
-            
+            if self.use_text_cfg:       
+                last_x = last_x.tile((2,1))
+                text_emb = text_emb.tile((2,1))
+                x = x.tile((2,1))
+                te = te.tile((2,1))
+
+                text_emb[:b] *= 0
+                pred = self.model(last_x, text_emb, x, te).detach()
+                pred_uncond = pred[:b]
+                pred_cond = pred[b:]
+
+                pred =  (
+                    pred_uncond 
+                    + self.text_cfg_scale * (pred_cond - pred_uncond) 
+                )
+
+            else:
+                pred = self.model(last_x, text_emb, x, te).detach()
+
+
             if self.estimate_mode == 'epsilon':
                 x = self.remove_noise(x, pred, ts)
             elif self.estimate_mode == 'x0':
                 x = pred
             
-            if record_process:
-                x0s[:,self.T - 1- t,:] = x
-                
             if t > 0:
                 x = self.add_noise(x, ts)
-        
-        if record_process:
-            return x0s
         
         return x
 
@@ -343,14 +377,15 @@ class GaussianDiffusion(nn.Module):
         action_scale = extra_info['action_scale'] if is_train else extra_info['test_action_scale']
 
         action_dim_per_step = 8 if action_mode == 'loco' else self.frame_dim
-        
+        text_emb = self.cond_mlp(extra_info['text_embeddings'].to(last_x.device).float())
+
         x = action_dict[...,:action_dim_per_step] / 3
         for t in range(self.T - 1, -1, -1):
             with torch.no_grad():
                 
                 ts = torch.tensor([t], device = last_x.device).repeat(last_x.shape[0])
                 te = self.time_mlp(ts)
-                pred = self.model(last_x, x, te).detach()
+                pred = self.model(last_x, text_emb, x, te).detach()
                 
                 if self.estimate_mode == 'epsilon':
                     x = self.remove_noise(x, pred, ts)
@@ -377,6 +412,7 @@ class GaussianDiffusion(nn.Module):
     def sample_ddpm_interactive(self, last_x, edited_mask, edited_data, extra_info):
         repaint_step = extra_info['repaint_step']
         interact_stop_step = extra_info['interact_stop_step']
+        text_emb = self.cond_mlp(extra_info['text_embeddings'])
         edited_mask_inv = 1 - edited_mask
 
         x = torch.randn(last_x.shape[0], last_x.shape[-1]).to(last_x.device)
@@ -386,7 +422,7 @@ class GaussianDiffusion(nn.Module):
                 ts = torch.tensor([t], device = last_x.device).repeat(last_x.shape[0])
 
                 te = self.time_mlp(ts)
-                pred = self.model(last_x, x, te).detach()
+                pred = self.model(last_x, text_emb, x, te).detach()
                 
                 if self.estimate_mode == 'epsilon':
                     x = self.remove_noise(x, pred, ts)
@@ -405,62 +441,25 @@ class GaussianDiffusion(nn.Module):
 
         return x
     
-
-
-    @torch.no_grad()
-    def sample_ddim(self, bs, num_steps, device, eta=0.0):
-        
-        T_train = self.T - 1
-        timesteps = torch.linspace(0, T_train, num_steps, dtype=torch.long, device = device)
-        timesteps_next = [-1] + list(timesteps[:-1])
-        
-        x = torch.randn(bs, self.action_dim, device = device)
-        
-        for t in range(len(timesteps)-1, -1, -1):
-            
-            ts = torch.tensor([timesteps[t]], device = device).repeat(bs)
-            ts1 = torch.tensor([timesteps_next[t]], device = device).repeat(bs)
-            
-            alpha_bar = self.extract(self.alphas_cumprod, ts, x.shape)
-            alpha_bar_prev = self.extract(self.alphas_cumprod, ts1, x.shape) if t > 0 else torch.ones_like(x)
-            sigma = eta *((1 - alpha_bar_prev)/(1 - alpha_bar) * (1 - alpha_bar / alpha_bar_prev)).sqrt()
-            # eta = 0.0 deterministic
-            te = self.time_mlp(ts)
-            input = torch.cat([x, te],axis=-1)
-            output = self.model(input)
-
-            if self.estimate_mode == 'x0':
-                pred_x0 = output
-                pred_eps = self.get_eps_from_x0(x, ts, pred_x0)
-            else:
-                pred_eps = output
-                pred_x0 = self.get_x0_from_xt(x, ts, pred_eps)
-
-            mean_pred = (
-                pred_x0 * self.extract(self.sqrt_alphas_cumprod, ts, x.shape)
-                + (1 - alpha_bar_prev- sigma ** 2).sqrt() * pred_eps
-            )
-
-            nonzero_mask = (
-                (ts != 0).float().view(-1, *([1] * (len(x.shape) - 1))))  
-            
-            x = mean_pred + nonzero_mask * sigma * torch.randn_like(x)            
-    
-        return x
     
     def forward(self, cur_x, next_x, ts, extra_info):
         bs = cur_x.shape[0]
+        dtype = cur_x.dtype
         device = cur_x.device
         if ts is None:
             ts = torch.randint(0, self.T, (bs,), device=device)
         
+        text_emb = self.cond_mlp(extra_info['text_embeddings'])
+        if self.use_text_cfg:
+            masks = torch.ones((bs,),device=device,dtype=dtype) * self.text_cfg_prob
+            masks = torch.bernoulli(masks)
+            text_emb = text_emb * masks
         time_emb = self.time_mlp(ts) 
 
         noise = torch.randn_like(next_x)
         perturbed_x = self.perturb_x(next_x, ts.clone(), noise)
         
-        latent = time_emb
-        estimated = self.model(cur_x, perturbed_x, latent)
+        estimated = self.model(cur_x, text_emb, perturbed_x, time_emb)
         return estimated, noise, perturbed_x, ts
 
 
@@ -469,6 +468,7 @@ class NoiseDecoder(nn.Module):
         self,
         frame_size,
         hidden_size,
+        text_emb_size,
         time_emb_size,
         layer_num,
         norm_type,
@@ -483,7 +483,7 @@ class NoiseDecoder(nn.Module):
                 non_linear = torch.nn.ReLU() ### v12 is ReLU
             elif act_type == 'SiLU':
                 non_linear = Activation.SiLU() 
-            linear = nn.Linear(hidden_size + frame_size * 2 + time_emb_size, hidden_size)
+            linear = nn.Linear(hidden_size + frame_size * 2 + time_emb_size + text_emb_size, hidden_size)
             if norm_type == 'layer_norm':
                 norm_layer = nn.LayerNorm(hidden_size)
             elif norm_type == 'group_norm':
@@ -493,26 +493,25 @@ class NoiseDecoder(nn.Module):
             layers.extend([non_linear, linear])
             
         self.net = nn.ModuleList(layers)
-        self.fin = nn.Linear(frame_size * 2 + time_emb_size, hidden_size)
-        self.fco = nn.Linear(hidden_size + frame_size * 2  + time_emb_size, frame_size)
+        self.fin = nn.Linear(frame_size * 2 + time_emb_size + text_emb_size, hidden_size)
+        self.fco = nn.Linear(hidden_size + frame_size * 2  + time_emb_size + text_emb_size, frame_size)
         self.act = Activation.SiLU()
   
-    def forward(self, xcur, xnext, latent):
+    def forward(self, xcur, text_emb, xnext, time_emb):
         
         x0 = xnext
         y0 = xcur
-        
-        x = torch.cat([xcur, xnext, latent], dim=-1)
+        x = torch.cat([xcur, text_emb, xnext, time_emb], dim=-1)
         x = self.fin(x)
 
         for i, layer in enumerate(self.net):
             if i % 3 == 2:
-                x = torch.cat([x, x0, y0, latent], dim=-1)
+                x = torch.cat([x, text_emb, x0, y0, time_emb], dim=-1)
                 x = layer(x)
             else:
                 x = layer(x)
 
-        x = torch.cat([x, x0, y0, latent],dim=-1) 
+        x = torch.cat([x, text_emb, x0, y0, time_emb],dim=-1) 
         x = self.fco(x)
         return x 
    

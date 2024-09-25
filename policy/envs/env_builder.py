@@ -16,9 +16,8 @@ def build_envs(config_file, int_output_dir, model, dataset, mode, device):
         config['is_rendered'] = False
     
     print("Building {}-{}".format(env_module,env_name))
-
-    gym.envs.registration.register(id= env_name, entry_point=env_module)
-
+  
+    gym.envs.registration.register(id = env_name, entry_point=env_module)
     env = gym.make(env_module, config=config, model=model, dataset=dataset, device=device)
     env.seed(seed)
     return env

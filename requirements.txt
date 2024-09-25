@@ -9,3 +9,4 @@ gymnasium==0.28.1
 urllib3==1.26.6
 wandb
 transformers
+sentence_transformers

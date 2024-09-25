@@ -1,0 +1,8 @@
+env_module: "policy.envs.randomplaytext_env:RandomPlayTextEnv"
+env_name: "RandomPlayTextEnv"
+num_parallel_test: 1
+
+max_timestep: 5000
+frame_skip: 1
+
+#text: ['sidestep', 'forward', 'backward', 'stand still',',']

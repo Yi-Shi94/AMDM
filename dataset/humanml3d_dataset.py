@@ -91,7 +91,6 @@ class HumanML3D(base_dataset.BaseMotionData):
     def get_root_linear_planar_vel(self, x):
         return x[..., 1:3]
 
-
     def plot_jnts(self, x, path=None):
         return plot_util.plot_lafan1(x, links=self.links, save_path=path)
     

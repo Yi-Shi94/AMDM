@@ -13,7 +13,17 @@ model_hyperparam:
     #cond_mask_prob: 0
     #cond_emb_size: 256 #condition frame for [class, text, etc]
     time_emb_size: 128 #time embediing
+    text_emb_size: 128
+
     hidden_size: 1024
+    use_last_frame_cfg: False
+    last_frame_cfg_scale: 0.0
+    last_frame_cfg_prob: 0.0
+
+    use_text_cfg: False
+    text_cfg_scale: 1.5
+    text_cfg_prob: 0.1
+
     use_cond: False
     cond_num_cls: 0
     norm_type: "group_norm"
@@ -49,7 +59,8 @@ data:
     train_split: "./data/HumanML3D/train.txt"
     val_split: "./data/HumanML3D/val.txt"
     test_split: "./data/HumanML3D/test.txt"
-    text_model_path: "./lm/GIST-all-MiniLM-L6-v2"
+    text_model_path: "lm/t5-small" #"./lm/clip-vit-large-patch14" #"./lm/GIST-all-MiniLM-L6-v2"
+    lm_framework: "transformers_encdec"
 
     data_fps: 30
     root_rot_offset: 180
@@ -63,6 +74,6 @@ data:
     
 test:
     test_interval: 50
-    test_num_steps: 90
-    test_num_trials: 5
+    test_num_steps: 120
+    test_num_trials: 4
     test_num_init_frame: 5 

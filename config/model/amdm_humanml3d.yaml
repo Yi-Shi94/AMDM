@@ -25,15 +25,15 @@ optimizer:
     anneal_times: 100
     initial_lr: 0.00001
     final_lr: 0.0000005
-    initial_teacher_epochs: 50
-    end_teacher_epochs: 200 
-    teacher_epochs: 3
+    initial_teacher_epochs: 10
+    end_teacher_epochs: 500 
+    teacher_epochs: 0
     ramping_epochs: 0
-    student_epochs: 2
+    student_epochs: 5
     peak_student_rate: 1
     mini_batch_size: 4096
     full_T: False
-    rollout: 5
+    rollout: 3
     EMA:    
         ema_decay: 0.99
         ema_start: 5000
@@ -60,6 +60,6 @@ data:
     
 test:
     test_interval: 50
-    test_num_steps: 90
-    test_num_trials: 5
+    test_num_steps: 120
+    test_num_trials: 4
     test_num_init_frame: 5 

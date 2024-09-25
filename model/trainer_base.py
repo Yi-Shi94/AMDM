@@ -181,8 +181,5 @@ class BaseTrainer():
               
             test_out_long_lst = np.array(test_out_long_lst)
             self.plot_traj_fn(test_out_long_lst, result_ouput_dir+'/{}_long'.format(st_idx))
-            
-
-
 
         return NaN_clip_num
