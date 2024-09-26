@@ -85,8 +85,6 @@ class HumanML3D(humanml3d_dataset.HumanML3D):
         
         elif self.lm_framework == 'clip':
             pass
-        #else:
-        #    pass
         return model, tokenizer
 
     def encode_text(self, text, maxlen=512):

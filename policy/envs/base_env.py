@@ -152,7 +152,7 @@ class EnvBase(gym.Env):
         self.root_xz.add_(displacement)
         
         self.history = self.history.roll(1, dims=1)
-        self.history[:, :self.num_condition_frames].copy_(pose.view(pose.shape[0], -1, pose.shape[-1]))
+        self.history[:, :self.num_condition_frames].copy_(pose.view(self.num_parallel, -1, pose.shape[-1]))
     
 
 

@@ -66,7 +66,7 @@ class RandomPlayTextEnv(base_env.EnvBase):
         if self.is_rendered:
             self.message_box = Message_box() 
             self.text = ''
-            self.text_emb = torch.as_tensor(self.dataset.encode_text(self.text),device=device).unsqueeze(0)
+            self.text_emb = torch.as_tensor(self.dataset.encode_text(self.text),device=device)#.unsqueeze(0)
             self.sync_cur_text()
             self.cur_extra_info = {"text_embeddings":self.text_emb}
 
@@ -128,7 +128,7 @@ class RandomPlayTextEnv(base_env.EnvBase):
         elif self.text != use_input:
             self.text = use_input
             self.text_emb = torch.as_tensor(self.dataset.encode_text(use_input),
-                                            device=self.device, dtype = self.text_emb.dtype).unsqueeze(0)
+                                            device=self.device, dtype = self.text_emb.dtype)#.unsqueeze(0)
             self.cur_extra_info["text_embeddings"] = self.text_emb
         
     def close(self):
@@ -140,14 +140,11 @@ class RandomPlayTextEnv(base_env.EnvBase):
         if self.timestep % 30 == 0:
             self.sync_cur_text()
             print('Current_user_input:{}'.format(self.text))
-
         condition = self.get_cond_frame()
-       
         with torch.no_grad():
             output = self.model.eval_step(condition, self.cur_extra_info)
             
         return output
-    
 
     
     def reset(self):

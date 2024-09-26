@@ -20,7 +20,7 @@ model_hyperparam:
     last_frame_cfg_scale: 0.0
     last_frame_cfg_prob: 0.0
 
-    use_text_cfg: False
+    use_text_cfg: True
     text_cfg_scale: 1.5
     text_cfg_prob: 0.1
 
@@ -74,6 +74,6 @@ data:
     
 test:
     test_interval: 50
-    test_num_steps: 120
-    test_num_trials: 4
-    test_num_init_frame: 5 
+    test_num_steps: 200
+    test_num_trials: 5
+    test_num_init_frame: 4

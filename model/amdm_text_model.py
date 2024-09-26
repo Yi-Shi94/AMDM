@@ -334,21 +334,22 @@ class GaussianDiffusion(nn.Module):
             te = self.time_mlp(ts)
 
             if self.use_text_cfg:       
-                last_x = last_x.tile((2,1))
-                text_emb = text_emb.tile((2,1))
-                x = x.tile((2,1))
-                te = te.tile((2,1))
-
-                text_emb[:b] *= 0
-                pred = self.model(last_x, text_emb, x, te).detach()
+                last_x_expanded = last_x.tile((2,1))
+                text_emb_expanded = text_emb.tile((2,1))
+                x_expanded = x.tile((2,1))
+                te_expanded = te.tile((2,1))
+                
+                text_emb_expanded[:b] *= 0
+                pred = self.model(last_x_expanded, text_emb_expanded, x_expanded, te_expanded).detach()
                 pred_uncond = pred[:b]
                 pred_cond = pred[b:]
+                x = x_expanded[b:]
 
                 pred =  (
                     pred_uncond 
                     + self.text_cfg_scale * (pred_cond - pred_uncond) 
                 )
-
+            
             else:
                 pred = self.model(last_x, text_emb, x, te).detach()
 
@@ -450,10 +451,12 @@ class GaussianDiffusion(nn.Module):
             ts = torch.randint(0, self.T, (bs,), device=device)
         
         text_emb = self.cond_mlp(extra_info['text_embeddings'])
+        
         if self.use_text_cfg:
-            masks = torch.ones((bs,),device=device,dtype=dtype) * self.text_cfg_prob
-            masks = torch.bernoulli(masks)
+            masks = torch.ones((bs,1),device=device,dtype=dtype) * self.text_cfg_prob
+            masks = 1 - torch.bernoulli(masks)
             text_emb = text_emb * masks
+
         time_emb = self.time_mlp(ts) 
 
         noise = torch.randn_like(next_x)
