@@ -17,16 +17,18 @@ class HumanML3D(base_dataset.BaseMotionData):
         self.train_split_file = config['data']['train_split']
         self.val_split_file = config['data']['val_split']
         self.test_split_file = config['data']['test_split']
-        self.test_data_flattened, self.test_valid_idx = self.load_motion_from_split(self.test_split_file,self.test_num_steps)
-        self.val_data_flattened, self.val_valid_idx = self.load_motion_from_split(self.val_split_file,self.test_num_steps)
-       
-        skip_num = max(len(self.val_valid_idx)//self.test_num_init_frame,1)
-        self.val_valid_idx = np.array(self.val_valid_idx)[::skip_num]
-        self.val_ref_clips = np.array([self.val_data_flattened[idx:idx+self.test_num_steps] for idx in self.val_valid_idx])
 
-        skip_num = max(len(self.test_valid_idx)//self.test_num_init_frame,1)
-        self.test_valid_idx = np.array(self.test_valid_idx)[::skip_num]
-        self.test_ref_clips = np.array([self.test_data_flattened[idx:idx+self.test_num_steps] for idx in self.test_valid_idx])
+
+        #self.test_data_flattened, self.test_valid_idx = self.load_motion_from_split(self.test_split_file,self.test_num_steps)
+        #self.val_data_flattened, self.val_valid_idx = self.load_motion_from_split(self.val_split_file,self.test_num_steps)
+       
+        #skip_num = max(len(self.val_valid_idx)//self.test_num_init_frame,1)
+        #self.val_valid_idx = np.array(self.val_valid_idx)[::skip_num]
+        #self.val_ref_clips = np.array([self.val_data_flattened[idx:idx+self.test_num_steps] for idx in self.val_valid_idx])
+
+        #skip_num = max(len(self.test_valid_idx)//self.test_num_init_frame,1)
+        #self.test_valid_idx = np.array(self.test_valid_idx)[::skip_num]
+        #self.test_ref_clips = np.array([self.test_data_flattened[idx:idx+self.test_num_steps] for idx in self.test_valid_idx])
        
     def load_motion_from_split(self, split_file, num_steps_end_clip):
         split_valid_idx = []
