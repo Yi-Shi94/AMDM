@@ -81,7 +81,11 @@ class AMDM(model_base.BaseModel):
 
     
     def eval_seq(self, start_x, extra_dict, num_steps, num_trials, align_rpr=False, record_process=False):
+        diffusion = self.ema_diffusion if self.use_ema else self.diffusion  
 
+        if start_x is None:
+            start_x = diffusion.sample_ddpm_firstframe(num_trials, extra_dict, self.device)
+        
         if len(start_x.shape)<=1:
             start_x = start_x[None,:]
         
@@ -94,7 +98,10 @@ class AMDM(model_base.BaseModel):
         else:
             print('overwrite num of trial with actual batch size of start_x')
             num_trials = start_x.shape[0]
-        
+            cur_extra_dict = {}
+            for item in extra_dict:
+                cur_extra_dict[item] = extra_dict[item]
+
         if record_process:
             output_xs = torch.zeros((num_trials, num_steps, self.T, self.frame_dim)).to(self.device)
         else:
@@ -319,39 +326,90 @@ class GaussianDiffusion(nn.Module):
         )   
 
 
+    @torch.no_grad()
+    def sample_ddpm_firstframe(self, num_init, extra_info, device):
+        text_emb = torch.as_tensor(extra_info['text_embeddings'], device=device)
+        text_emb = self.cond_mlp(text_emb)
+        b = num_init
+
+        text_emb = text_emb.tile((b,1))
+        last_x = torch.zeros((b, self.frame_dim), device=device)
+        x = torch.randn(b, self.frame_dim, device=device)
+
+        for t in range(self.T - 1, -1, -1):
+            ts = torch.tensor([t], device = last_x.device).repeat(b)
+            te = self.time_mlp(ts)
+
+            if self.use_text_cfg:
+                last_x_expanded = last_x.tile((2,1))
+                text_emb_expanded = text_emb.tile((2,1))
+
+                x_expanded = x.tile((2,1))
+                te_expanded = te.tile((2,1))
+                
+                if self.use_text_cfg:
+                    text_emb_expanded[:b] *= 0
+                
+                pred = self.model(last_x_expanded, text_emb_expanded, x_expanded, te_expanded)
+                pred_uncond, pred_cond = pred.chunk(2)
+
+                pred =  (
+                    pred_uncond 
+                    + self.text_cfg_scale * (pred_cond - pred_uncond) 
+                )
+
+            else:
+                pred = self.model(last_x, text_emb, x, te)
+
+            if self.estimate_mode == 'epsilon':
+                x = self.remove_noise(x, pred, ts)
+            elif self.estimate_mode == 'x0':
+                x = pred
+            
+            if t > 0:
+                x = self.add_noise(x, ts)
+        
+        return x
+
 
     @torch.no_grad()
     def sample_ddpm(self, last_x, extra_info):
         b = last_x.shape[0]
         device = last_x.device
         dtype = last_x.dtype
-        x = torch.randn(last_x.shape[0], last_x.shape[-1]).to(device)
+
+        x = torch.randn(b, last_x.shape[-1]).to(device)
         text_emb = torch.as_tensor(extra_info['text_embeddings'], device=device, dtype=dtype)
         text_emb = self.cond_mlp(text_emb)
-        
+        text_emb = text_emb.tile((b,1))
+
         for t in range(self.T - 1, -1, -1):
-            ts = torch.tensor([t], device = last_x.device).repeat(last_x.shape[0])
+            ts = torch.tensor([t], device = last_x.device).repeat(b)
             te = self.time_mlp(ts)
 
-            if self.use_text_cfg:       
+            if self.use_text_cfg or self.use_last_frame_cfg:
+
                 last_x_expanded = last_x.tile((2,1))
                 text_emb_expanded = text_emb.tile((2,1))
                 x_expanded = x.tile((2,1))
                 te_expanded = te.tile((2,1))
                 
-                text_emb_expanded[:b] *= 0
-                pred = self.model(last_x_expanded, text_emb_expanded, x_expanded, te_expanded).detach()
-                pred_uncond = pred[:b]
-                pred_cond = pred[b:]
-                x = x_expanded[b:]
+                if self.use_text_cfg:
+                    text_emb_expanded[:b] *= 0
+                
+                if self.use_last_frame_cfg:
+                    last_x_expanded[:b] *= 0
+
+                pred = self.model(last_x_expanded, text_emb_expanded, x_expanded, te_expanded)
+                pred_uncond, pred_cond = pred.chunk(2)
 
                 pred =  (
                     pred_uncond 
                     + self.text_cfg_scale * (pred_cond - pred_uncond) 
                 )
-            
+
             else:
-                pred = self.model(last_x, text_emb, x, te).detach()
+                pred = self.model(last_x, text_emb, x, te)
 
 
             if self.estimate_mode == 'epsilon':
@@ -447,8 +505,13 @@ class GaussianDiffusion(nn.Module):
         bs = cur_x.shape[0]
         dtype = cur_x.dtype
         device = cur_x.device
+
         if ts is None:
             ts = torch.randint(0, self.T, (bs,), device=device)
+        time_emb = self.time_mlp(ts) 
+
+        noise = torch.randn_like(next_x)
+        perturbed_x = self.perturb_x(next_x, ts.clone(), noise)
         
         text_emb = self.cond_mlp(extra_info['text_embeddings'])
         
@@ -456,11 +519,11 @@ class GaussianDiffusion(nn.Module):
             masks = torch.ones((bs,1),device=device,dtype=dtype) * self.text_cfg_prob
             masks = 1 - torch.bernoulli(masks)
             text_emb = text_emb * masks
-
-        time_emb = self.time_mlp(ts) 
-
-        noise = torch.randn_like(next_x)
-        perturbed_x = self.perturb_x(next_x, ts.clone(), noise)
+        
+        if self.use_last_frame_cfg:
+            masks = torch.ones((bs,1),device=device,dtype=dtype) * self.last_frame_cfg_prob
+            masks = 1 - torch.bernoulli(masks)
+            cur_x = cur_x * masks
         
         estimated = self.model(cur_x, text_emb, perturbed_x, time_emb)
         return estimated, noise, perturbed_x, ts

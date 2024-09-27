@@ -5,24 +5,24 @@ diffusion:
     estimate_mode: "epsilon"
     loss_type: "l1"
     noise_schedule_mode: "cosine"
-    T: 20
-    eval_T: 20
+    T: 25
+    eval_T: 25
 
 model_hyperparam:
     layer_num: 18
     #cond_mask_prob: 0
     #cond_emb_size: 256 #condition frame for [class, text, etc]
     time_emb_size: 128 #time embediing
-    text_emb_size: 128
+    text_emb_size: 256
 
     hidden_size: 1024
-    use_last_frame_cfg: False
-    last_frame_cfg_scale: 0.0
-    last_frame_cfg_prob: 0.0
+    use_last_frame_cfg: True
+    last_frame_cfg_scale: 7.5
+    last_frame_cfg_prob: 0.3
 
     use_text_cfg: True
-    text_cfg_scale: 1.5
-    text_cfg_prob: 0.1
+    text_cfg_scale: 7.5
+    text_cfg_prob: 0.3
 
     use_cond: False
     cond_num_cls: 0
@@ -32,7 +32,7 @@ model_hyperparam:
 optimizer:
     consistency_on: False
     consist_loss_weight: 0
-    anneal_times: 50
+    anneal_times: 20
     initial_lr: 0.0005
     final_lr: 0.0000005
     initial_teacher_epochs: 800
@@ -43,7 +43,7 @@ optimizer:
     peak_student_rate: 1
     mini_batch_size: 4096
     full_T: False
-    rollout: 3
+    rollout: 4
     EMA:    
         ema_decay: 0.99
         ema_start: 5000
@@ -59,10 +59,10 @@ data:
     train_split: "./data/HumanML3D/train.txt"
     val_split: "./data/HumanML3D/val.txt"
     test_split: "./data/HumanML3D/test.txt"
-    text_model_path: "lm/t5-small" #"./lm/clip-vit-large-patch14" #"./lm/GIST-all-MiniLM-L6-v2"
-    lm_framework: "transformers_encdec"
+    text_model_path: "ViT-B/32" #"./lm/clip-vit-large-patch14" #"./lm/GIST-all-MiniLM-L6-v2"
+    lm_framework: "clip" #"transformers_encdec" #sentence_transformers
 
-    data_fps: 30
+    data_fps: 20
     root_rot_offset: 180
     min_motion_len: 0
     max_motion_len: -1
@@ -74,6 +74,6 @@ data:
     
 test:
     test_interval: 50
-    test_num_steps: 200
+    test_num_steps: 180
     test_num_trials: 5
-    test_num_init_frame: 4
+    test_num_init_frame: 5

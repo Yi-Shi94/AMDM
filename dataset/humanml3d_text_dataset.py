@@ -2,13 +2,15 @@ import random
 import numpy as np
 from tqdm import tqdm
 import os
-import os.path as osp
+import clip
 import codecs as cs
 import dataset.util.plot as plot_util
 from dataset.util.humanml3d.util.paramUtil import *
 import dataset.humanml3d_dataset as humanml3d_dataset
 from numpy import dot
 from numpy.linalg import norm
+
+
 
 class HumanML3D(humanml3d_dataset.HumanML3D):
     NAME = 'HumanML3D_TEXT'
@@ -84,10 +86,12 @@ class HumanML3D(humanml3d_dataset.HumanML3D):
             model = SentenceTransformer(path)
         
         elif self.lm_framework == 'clip':
-            pass
+            import clip
+            model, tokenizer = clip.load(path,jit=False)  # Must set jit=False for training
+            model.eval()
         return model, tokenizer
 
-    def encode_text(self, text, maxlen=512):
+    def encode_text(self, text, maxlen=100):
         if self.lm_framework == 'transformers_encdec':
             input_ids = self.tokenizer(
             text, 
@@ -102,7 +106,8 @@ class HumanML3D(humanml3d_dataset.HumanML3D):
             output = self.model.encode(text)
 
         elif self.lm_framework == 'clip':
-            pass
+            texts = clip.tokenize(text, truncate=True).to('cuda') # [bs, context_length] # if n_tokens > 77 -> will truncate
+            output = self.model.encode_text(texts).float().cpu().detach().numpy()
 
         return output
 

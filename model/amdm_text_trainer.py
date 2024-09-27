@@ -181,7 +181,7 @@ class AMDMTrainer(trainer_base.BaseTrainer):
             
             text_idx = idx % len(texts)
             text = texts[text_idx]
-            text_emb = torch.as_tensor(text_embs[text_idx][None,...]).float().to(self.device)
+            text_emb = torch.as_tensor(text_embs[text_idx]).float().to(self.device)[None,...]
             extra_dict = {"text_embeddings":text_emb}
 
             test_out_lst = []
@@ -189,22 +189,9 @@ class AMDMTrainer(trainer_base.BaseTrainer):
 
             print('Evaluating: starting index:{}, text:{}'.format(st_idx,text))
 
-            start_x = torch.from_numpy(ref_clip[0]).float().to(self.device)
+            #start_x = torch.from_numpy(ref_clip[0]).float().to(self.device)
             
-            if ep == 0:
-                model_lst = self.dataset.data_component           
-                cur_jnts = []
-                for mode in model_lst:
-                    jnts_mode = self.dataset.x_to_jnts(self.dataset.denorm_data(ref_clip), mode=mode)
-                    cur_jnts.append(jnts_mode)
-                cur_jnts = np.array(cur_jnts)
-
-                self.plot_jnts_fn(cur_jnts.squeeze(), result_ouput_dir+'/gt_{}'.format(st_idx))
-                ref_clip = cur_jnts[[0],...]
-            else:
-                ref_clip = self.dataset.x_to_jnts(self.dataset.denorm_data(ref_clip), mode=self.dataset.data_component[0])[None,...]
-            
-            test_out_lst.append(ref_clip.squeeze())
+            start_x = None #model.sample_ddpm_firstframe()
             test_data = model.eval_seq(start_x, extra_dict, self.test_num_steps, self.test_num_trials)
             test_data_long = model.eval_seq(start_x, extra_dict, 1000, 3)
 
