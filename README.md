@@ -25,29 +25,34 @@ Download, unzip and merge with your output directory.
 [100STYLE_25step](https://drive.google.com/file/d/1-ju_XW9JsHrBuLORl8-n7jJiry5C_3Fn/view?usp=sharing)
 
 ## Dataset Preparation
+For each dataset, our dataloader automatically parses it into a sequence of 1D frames, saving the frames as data.npz and the essential normalization statistics as stats.npz within your dataset directory. We provide stats.npz so users can perform inference without needing to download the full dataset and provide a single file from the dataset instead.
+
 ### LaFAN1:
-[Download](https://github.com/ubisoft/ubisoft-laforge-animation-dataset) and extract under ```./data/``` directory.
+[Download](https://github.com/ubisoft/ubisoft-laforge-animation-dataset) and extract under ```./data/LAFAN``` directory.
 BEWARE: We didn't include files with a prefix of 'obstacle' in our experiments. 
 
 ### 100STYLE:
-[Download](https://www.ianxmason.com/100style/) and extract under ```./data/``` directory.
+[Download](https://www.ianxmason.com/100style/) and extract under ```./data/100STYLE``` directory.
 
 ### Arbitrary BVH dataset:
 Download and extract under ```./data/``` directory. Create a yaml config file in ```./config/model/```, 
 
 ### AMASS:
-Follow the procedure described in the repo of [HuMoR](https://github.com/davrempe/humor)
+Follow the procedure described in the repo of [HuMoR](https://github.com/davrempe/humor) and extract under ```./data/AMASS``` directory.
 
 ### HumanML3D:
-Follow the procedure described in the repo of [HumanML3D](https://github.com/EricGuo5513/HumanML3D.git) 
+Follow the procedure described in the repo of [HumanML3D](https://github.com/EricGuo5513/HumanML3D.git) and extract under ```./data/HumanML3D``` directory.
 
-### Sanity Check:
+
+## Installation
 ```
-python run_sanity_data.py
+conda create -n amdm python=3.7
+conda activate amdm
+pip install -r requirement.txt
+mkdir output
 ```
 
 ## Base Model
-
 ### Training
 ```
 python run_base.py --arg_file args/amdm_DATASET_train.txt
@@ -90,13 +95,6 @@ python run_env.py --arg_file args/ENV_train_amdm_DATASET.txt
 python run_env.py --arg_file args/ENV_test_amdm_DATASET.txt
 ```
 
-## Installation
-```
-conda create -n amdm python=3.7
-conda activate amdm
-pip install -r requirement.txt
-mkdir output && mkdir data
-```
 
 ## For users wish to create more variants given a mocap dataset
 1. Train the base model
