@@ -1,11 +1,11 @@
 
---model_config output/base/amdm_lafan1_2/config.yaml
---model_path output/base/amdm_lafan1_2/model_param.pth
+--model_config output/base/amdm_lafan1/config.yaml
+--model_path output/base/amdm_lafan1/model_param.pth
 
---int_output_dir output/path/amdm_lafan1_2/
---env_config output/path/amdm_lafan1_2/path_amdm.yaml
---agent_config output/path/amdm_lafan1_2/ppo.yaml
---controller_path output/path/amdm_lafan1_2/_ep2000.pth
+--int_output_dir output/path/amdm_lafan1/
+--env_config output/path/amdm_lafan1/path_amdm.yaml
+--agent_config output/path/amdm_lafan1/ppo.yaml
+--controller_path output/path/amdm_lafan1/_ep2000.pth
 --test_motion_file data/LAFAN1/dance1_subject1.bvh
 
 --device cuda:0

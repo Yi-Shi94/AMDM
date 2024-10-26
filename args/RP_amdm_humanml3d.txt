@@ -1,7 +1,7 @@
 --env_config config/envs/randomplay.yaml
---model_config output/base/amdm_humanml3d1_cont/config.yaml
---model_path output/base/amdm_humanml3d1_cont/model_param.pth
---int_output_dir output/base/amdm_humanml3d1_cont/
+--model_config output/base/amdm_humanml3d/config.yaml
+--model_path output/base/amdm_humanml3d/model_param.pth
+--int_output_dir output/base/amdm_humanml3d/
 
 --test_motion_file data/HumanML3D/new_joint_vecs/009300.npy
 

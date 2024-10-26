@@ -1,10 +1,10 @@
---model_config output/base/amdm_lafan1_2/config.yaml
---model_path output/base/amdm_lafan1_2/model_param.pth
+--model_config output/base/amdm_lafan1/config.yaml
+--model_path output/base/amdm_lafan1/model_param.pth
 
---agent_config output/targetgreedy/amdm_lafan1_2/ppo.yaml
---env_config output/targetgreedy/amdm_lafan1_2/targetgreedy_amdm.yaml
---int_output_dir output/targetgreedy/amdm_lafan1_2/
---controller_path output/targetgreedy/amdm_lafan1_2/policy_model.pth
+--agent_config output/targetgreedy/amdm_lafan1/ppo.yaml
+--env_config output/targetgreedy/amdm_lafan1/targetgreedy_amdm.yaml
+--int_output_dir output/targetgreedy/amdm_lafan1/
+--controller_path output/targetgreedy/amdm_lafan1/policy_model.pth
 
 --device cuda:0
 --mode test
