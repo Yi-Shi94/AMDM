@@ -15,7 +15,8 @@ We developed a PyTorch framework for kinematic-based auto-regressive motion gene
 1. July 28 2024, framework released.
 2. Aug 24 2024, LAFAN1 15step checkpoint released. 
 3. Sep 5 2024, 100STYLE 25step checkpoint released. 
-4. Stay tuned for support for more dataset.
+4. Interactive control on a T=16 LAFAN1 prior (target reaching, varying-speed path following with facing control, joystick) with a real-time MuJoCo viewer: [interactive_control/](interactive_control/README.md).
+5. Stay tuned for support for more dataset.
 
 
 ## Checkpoints
@@ -93,6 +94,16 @@ python run_env.py --arg_file args/ENV_train_amdm_DATASET.txt
 ### Inference
 ```
 python run_env.py --arg_file args/ENV_test_amdm_DATASET.txt
+```
+
+
+## Interactive Control (target / path / joystick)
+[interactive_control/](interactive_control/README.md) is a self-contained project: PPO controllers on a frozen T=16 LAFAN1 prior for target reaching, path following with varying speed and a separate facing direction, and joystick commands, plus a MuJoCo viewer (SMPL mesh or capsule person) with Xbox input, clickable targets and hand-drawn paths. Checkpoints and data are on the [interactive-v1.0 release](https://github.com/Yi-Shi94/AMDM/releases/tag/interactive-v1.0).
+```
+cd interactive_control
+pip install -r requirements.txt
+bash scripts/download.sh
+python -m amdm_interactive.viewer --controller output/interactive/path/policy.pth
 ```
 
 

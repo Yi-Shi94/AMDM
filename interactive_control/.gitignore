@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+wandb/
+output/
+body_models/
+data/LAFAN1/*
+!data/LAFAN1/stats.npz
+downloads/
