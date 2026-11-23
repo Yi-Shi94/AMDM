@@ -7,117 +7,78 @@
 ## Links
 [page](https://yi-shi94.github.io/amdm_page/) | [paper](https://arxiv.org/pdf/2306.00416v4) | [video](https://www.youtube.com/watch?v=5WE9hy0xCI4&ab_channel=YISHI) | [poster](https://docs.google.com/presentation/d/1KRxJh2ZoyV7dtKd25s_R4KGqslxCJyeqm5OGw24TKZU/edit?usp=sharing) | [slides](https://docs.google.com/presentation/d/1kA_LT9zi4nb7FbJjZGD_g692NfGSKbfXBuVEQxUEXAg/edit?usp=sharing)
 
-## Implementation of Auto-regressive Motion Diffusion Model (A-MDM)
-We developed a PyTorch framework for kinematic-based auto-regressive motion generation models, supporting both training and inference. Our framework also includes implementations for real-time inpainting and reinforcement learning-based interactive control. If you have any questions about A-MDM, please feel free to reach out via ISSUE or email.
 
+## Interactive Control
 
-## Update
-1. July 28 2024, framework released.
-2. Aug 24 2024, LAFAN1 15step checkpoint released. 
-3. Sep 5 2024, 100STYLE 25step checkpoint released. 
-4. Stay tuned for support for more dataset.
+PPO controllers that steer a frozen, T=16 A-MDM prior trained on LAFAN1, with a real-time MuJoCo viewer (SMPL mesh or
+capsule person), Xbox joystick input, clickable targets and hand-drawn paths:
 
+- **target**: walk to a target that can move at any time
+- **path**: follow a path whose speed varies from standstill to 4 m/s while holding a separate facing direction
+  (plus a variant that always faces along the path)
+- **joystick**: forward / sideways speed and turning commands (plus a forward-speed-only variant)
 
-## Checkpoints
-Download, unzip and merge with your output directory.
+Everything lives in [`interactive_control/`](interactive_control/README.md); run all commands from there.
 
-[LAFAN1_15step](https://drive.google.com/file/d/1a3emD8C5hN4wbTuPYhI0WytSMCuGoLNs/view?usp=sharing)
-[100STYLE_25step](https://drive.google.com/file/d/1-ju_XW9JsHrBuLORl8-n7jJiry5C_3Fn/view?usp=sharing)
+### Install
 
-## Dataset Preparation
-For each dataset, our dataloader automatically parses it into a sequence of 1D frames, saving the frames as data.npz and the essential normalization statistics as stats.npz within your dataset directory. We provide stats.npz so users can perform inference without needing to download the full dataset and provide a single file from the dataset instead.
+Tested with Python 3.10, PyTorch 1.13.1 (CUDA 11.7), MuJoCo 3.10 and pygame 2.6 on Linux.
 
-### LaFAN1:
-[Download](https://github.com/ubisoft/ubisoft-laforge-animation-dataset) and extract under ```./data/LAFAN``` directory.
-BEWARE: We didn't include files with a prefix of 'obstacle' in our experiments. 
-
-### 100STYLE:
-[Download](https://www.ianxmason.com/100style/) and extract under ```./data/100STYLE``` directory.
-
-### Arbitrary BVH dataset:
-Download and extract under ```./data/``` directory. Create a yaml config file in ```./config/model/```, 
-
-### AMASS:
-Follow the procedure described in the repo of [HuMoR](https://github.com/davrempe/humor) and extract under ```./data/AMASS``` directory.
-
-### HumanML3D:
-Follow the procedure described in the repo of [HumanML3D](https://github.com/EricGuo5513/HumanML3D.git) and extract under ```./data/HumanML3D``` directory.
-
-
-## Installation
-```
-conda create -n amdm python=3.7
-conda activate amdm
-pip install -r requirement.txt
-mkdir output
+```bash
+git clone https://github.com/Yi-Shi94/AMDM.git
+cd AMDM/interactive_control
+pip install -r requirements.txt
 ```
 
-## Base Model
-### Training
-```
-python run_base.py --arg_file args/amdm_DATASET_train.txt
-```
-or
-```
-python run_base.py
---model_config config/model/amdm_lafan1.yaml
---log_file output/base/amdm_lafan1/log.txt
+### Download checkpoints and data
 
---int_output_dir output/base/amdm_lafan1/
---out_model_file output/base/amdm_lafan1/model_param.pth
-
---mode train
---master_port 0
---rand_seed 122
-```
-Training time visualization is saved in --int_output_dir
-
-
-### Inference
-```
-python run_env.py --arg_file args/RP_amdm_DATASET.txt
+```bash
+bash scripts/download.sh             # prior + 5 controllers + LAFAN1 clips (~250 MB), checksummed, unpacked in place
+bash scripts/download.sh --no-lafan  # if you already have LAFAN1 (put its .bvh files in data/LAFAN1/)
 ```
 
-### Inpainting
-```
-python run_env.py --arg_file args/PI_amdm_DATASET.txt
+The files are on the [interactive-v1.0 release](https://github.com/Yi-Shi94/AMDM/releases/tag/interactive-v1.0)
+if you prefer to download them by hand. Unzip each inside `interactive_control/`:
+
+| Archive | Contents | Unpacks to |
+|---|---|---|
+| `amdm_lafan1_t16.zip` (108 MB) | T=16 LAFAN1 prior | `output/base/amdm_lafan1_t16/` |
+| `amdm_interactive_controllers.zip` (25 MB) | target, path, path_forward, joystick, joystick_1d controllers | `output/interactive/` |
+| `lafan1_bvh.zip` (120 MB) | the 60 LAFAN1 clips used ([Ubisoft La Forge](https://github.com/ubisoft/ubisoft-laforge-animation-dataset), CC BY-NC-ND 4.0) | `data/LAFAN1/` |
+
+The first run parses the clips into `data/LAFAN1/data.npz` (a few minutes).
+
+Optional SMPL mesh: the SMPL-H model cannot be redistributed, so register at [mano.is.tue.mpg.de](https://mano.is.tue.mpg.de),
+download the *Extended SMPL+H model* and fit it to the LAFAN skeleton once:
+
+```bash
+python -m amdm_interactive.fit_smpl_shape --source body_models/smplh/neutral/model.npz
 ```
 
-## High-Level Controller
+Without it the viewer uses the capsule person.
 
+### Run
 
-### Training
-```
-python run_env.py --arg_file args/ENV_train_amdm_DATASET.txt
-```
-### Inference
-```
-python run_env.py --arg_file args/ENV_test_amdm_DATASET.txt
+```bash
+python -m amdm_interactive.viewer --controller output/interactive/target/policy.pth          # click the map to place targets
+python -m amdm_interactive.viewer --controller output/interactive/path/policy.pth            # draw paths on the map
+python -m amdm_interactive.viewer --controller output/interactive/joystick/policy.pth        # Xbox if connected, else random commands
+python -m amdm_interactive.viewer                                                             # the prior alone
 ```
 
+In the MuJoCo window: **R** reset, **Space** pause, **C** swap SMPL mesh / capsule person, **X** joystick: Xbox / random
+commands. On the path map: drag to draw, **1-5** / **Up** / **Down** speed, **Left** / **Right** / **F** facing, **G** random
+path, **H** random facing changes on / off, right-click stop.
 
-## For users wish to create more variants given a mocap dataset
-1. Train the base model
-2. Follow the main function in gen_base_bvh.py, you can generate diverse motion given any starting pose:
+Train a controller (resumes automatically from `output/interactive/<run>/recovery.pth`):
+
+```bash
+python -m amdm_interactive.train --task target --run target \
+    --checkpoint output/base/amdm_lafan1_t16/model_param.pth --root_action_mask --lying_weight 2
+```
+
+All controls, training settings, rewards and the evaluation script are in [`interactive_control/README.md`](interactive_control/README.md).
+
+## Video
+
 [![](https://markdown-videos-api.jorgenkh.no/youtube/DniQWu_4Kag)](https://youtu.be/DniQWu_4Kag)
-
-
-## Acknowledgement
-Part of the RL modules utilized in our framework are based on the existing codebase of [MotionVAE](https://github.com/electronicarts/character-motion-vaes), please cite their work if you find using RL to guide autoregressive motion generative models helpful to your research.
-
-## BibTex
-```
-@article{
-        shi2024amdm,
-        author = {Shi, Yi and Wang, Jingbo and Jiang, Xuekun and Lin, Bingkun and Dai, Bo and Peng, Xue Bin},
-        title = {Interactive Character Control with Auto-Regressive Motion Diffusion Models},
-        year = {2024},
-        issue_date = {August 2024},
-        publisher = {Association for Computing Machinery},
-        address = {New York, NY, USA},
-        volume = {43},
-        journal = {ACM Trans. Graph.},
-        month = {jul},
-        keywords = {motion synthesis, diffusion model, reinforcement learning}
-      }
-```

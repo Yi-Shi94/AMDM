@@ -1,0 +1,10 @@
+# Tested: Python 3.10, torch 1.13.1+cu117, numpy 1.26, scipy 1.10, gymnasium 0.28.1, mujoco 3.10, pygame 2.6
+torch>=1.13
+numpy<2
+scipy
+pyyaml
+tqdm
+gymnasium==0.28.1
+wandb
+mujoco>=3.1
+pygame>=2.5
