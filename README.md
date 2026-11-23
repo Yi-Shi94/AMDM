@@ -62,12 +62,13 @@ Without it the viewer uses the capsule person.
 ```bash
 python -m amdm_interactive.viewer --controller output/interactive/target/policy.pth          # click the map to place targets
 python -m amdm_interactive.viewer --controller output/interactive/path/policy.pth            # draw paths on the map
-python -m amdm_interactive.viewer --controller output/interactive/joystick/policy.pth --xbox # Xbox controller
+python -m amdm_interactive.viewer --controller output/interactive/joystick/policy.pth        # Xbox if connected, else random commands
 python -m amdm_interactive.viewer                                                             # the prior alone
 ```
 
-In the MuJoCo window: **R** reset, **Space** pause, **C** swap SMPL mesh / capsule person. On the path map: drag to draw,
-**1-5** / **Up** / **Down** speed, **Left** / **Right** / **F** facing, **G** random path, right-click stop.
+In the MuJoCo window: **R** reset, **Space** pause, **C** swap SMPL mesh / capsule person, **X** joystick: Xbox / random
+commands. On the path map: drag to draw, **1-5** / **Up** / **Down** speed, **Left** / **Right** / **F** facing, **G** random
+path, **H** random facing changes on / off, right-click stop.
 
 Train a controller (resumes automatically from `output/interactive/<run>/recovery.pth`):
 

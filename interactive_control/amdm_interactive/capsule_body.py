@@ -15,6 +15,8 @@ import xml.etree.ElementTree as ET
 import mujoco
 import numpy as np
 
+from .smpl_body import add_shadow_settings
+
 RADII_HEIGHT_M = 1.65
 HEAD_LENGTH_M, HEAD_RADIUS_M = 0.09, 0.085  # head capsule ends this far above the Head joint (neck -> head line)
 NECK_RADIUS_M = 0.05
@@ -101,6 +103,7 @@ class CapsuleBody:
                       rgb1='0.36 0.39 0.42', rgb2='0.52 0.55 0.58', width='512', height='512')
         ET.SubElement(assets, 'material', name='floor_material', texture='floor_checker',
                       texrepeat='1 1', texuniform='true', reflectance='0', shininess='0.1')
+        add_shadow_settings(root)
         world = ET.SubElement(root, 'worldbody')
         ET.SubElement(world, 'light', name='body_light', pos='0 -3 5', dir='0 0.4 -1', directional='true')
         ET.SubElement(world, 'geom', name='ground', type='plane', size='500 500 0.1', material='floor_material')

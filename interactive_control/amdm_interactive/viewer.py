@@ -4,11 +4,12 @@ Run from the project root (interactive_control/ in the AMDM repo):
     python -m amdm_interactive.viewer                                          # prior only (unconditional)
     python -m amdm_interactive.viewer --controller output/interactive/target/policy.pth
     python -m amdm_interactive.viewer --controller output/interactive/path/policy.pth
-    python -m amdm_interactive.viewer --controller output/interactive/joystick/policy.pth --xbox
+    python -m amdm_interactive.viewer --controller output/interactive/joystick/policy.pth   # Xbox if connected, else random; X switches
 
 The task is read from args.json next to the policy. Target and path open a bird's-eye map window: click to
 place targets, or drag to draw a path (see README.md for all controls). Keys in the MuJoCo window:
-R reset, Space pause, C swap SMPL mesh / capsule person, E toggle EMA weights, G play the ground-truth seed clip.
+R reset, Space pause, C swap SMPL mesh / capsule person, E toggle EMA weights, G play the ground-truth seed clip,
+X joystick: Xbox / random commands.
 
 Body (--body): 'smpl' = the SMPL-H template fitted to LAFAN proportions (amdm_interactive/fit_smpl_shape.py),
 'capsule' = the primitive capsule person of the GenerativeWBC dodge task (no download). The default is smpl when
@@ -136,12 +137,23 @@ def find_bind_reference(stats):
     return raw[k], j[k], k * 10, float(score[k])
 
 
+# Joystick speed limits (m/s) by direction of travel relative to the facing goal; blended in between.
+FORWARD_MAX, SIDE_MAX, BACKWARD_MAX = 3., 1., 1.
+
+
+def speed_limit(direction, facing):
+    """Max speed for walking along unit `direction` while facing yaw `facing` (viewer world)."""
+    c = float(direction @ np.array([math.cos(facing), math.sin(facing)]))
+    along = FORWARD_MAX if c >= 0 else BACKWARD_MAX
+    return 1. / math.sqrt((c / along) ** 2 + (1 - c * c) / SIDE_MAX ** 2)  # ellipse through the three limits
+
+
 # ---- Xbox -> joystick command ----------------------------------------------------------------------------------
 class StickMapper:
     """World-fixed Xbox mapping for the joystick policy.
 
     Left stick = walking velocity in the ground plane (up = away from the camera as it was at reset, full tilt
-    3 m/s), right stick = facing direction to hold. The policy takes body-frame (forward, right, clockwise yaw
+    FORWARD_MAX forward, SIDE_MAX sideways, BACKWARD_MAX backward of the facing goal), right stick = facing direction to hold. The policy takes body-frame (forward, right, clockwise yaw
     rate), so the world command is converted with the current heading. The actual world velocity (smoothed) is
     fed back with gain `gain`, so the policy's lag while turning does not drag the walking direction around with
     the heading. A 1-D policy (forward speed only) uses the left stick's up/down axis.
@@ -170,28 +182,126 @@ class StickMapper:
         by = self.body_yaw()
         if getattr(self.env, 'command_dims', 3) == 1:
             self.facing_goal = by
-            forward = float(np.clip(3. * ly if ly >= 0 else ly, -1., 3.))
+            forward = float(FORWARD_MAX * ly if ly >= 0 else BACKWARD_MAX * ly)
             self.goal_velocity = forward * np.array([math.cos(by), math.sin(by)])
             return [forward, 0., 0.]
         fwd_axis = np.array([math.cos(self.frame), math.sin(self.frame)])
         right_axis = np.array([math.sin(self.frame), -math.cos(self.frame)])
         world = 3. * (ly * fwd_axis + lx * right_axis)
+        if self.facing_goal is None:
+            self.facing_goal = by
+        if math.hypot(rx, ry) > .5:
+            d = ry * fwd_axis + rx * right_axis
+            self.facing_goal = math.atan2(d[1], d[0])
+        n = np.linalg.norm(world)
+        if n > 1e-3:  # full stick = the limit for this direction (slower backward and sideways)
+            world *= speed_limit(world / n, self.facing_goal) / 3.
         self.goal_velocity = world.copy()
         if np.linalg.norm(world) > 1e-3:  # feedback only while the stick is pushed
             world = world + self.gain * (world - self.actual)
             n = np.linalg.norm(world)
             if n > 3.:
                 world *= 3. / n
-        if self.facing_goal is None:
-            self.facing_goal = by
-        if math.hypot(rx, ry) > .5:
-            d = ry * fwd_axis + rx * right_axis
-            self.facing_goal = math.atan2(d[1], d[0])
         bf = np.array([math.cos(by), math.sin(by)]); br = np.array([math.sin(by), -math.cos(by)])
-        forward = float(np.clip(world @ bf, -1., 3.))
+        forward = float(np.clip(world @ bf, -BACKWARD_MAX, FORWARD_MAX))
         right = float(np.clip(world @ br, -1., 1.)) * min(1., max(0., (3. - forward) / 1.5))
         yaw = float(np.clip(2. * wrap_angle(self.facing_goal - by), -1.5, 1.5))
         return [forward, right, yaw]
+
+
+class RandomSticks:
+    """Stand-in for the Xbox pad: random, smoothly changing stick positions fed through StickMapper.
+
+    Every 3-6 s a new command: stand still (15%), or walk / jog / run (1, 1.8, 3 m/s) in a random world
+    direction, facing along it (60%), keeping the current facing (25%) or facing a random other way (15%,
+    sideways / backwards walking). The sticks ease toward each new position, so commands change smoothly.
+    """
+
+    def __init__(self, seed=None):
+        self.rng = np.random.default_rng(seed)
+        self.current = np.zeros(4)
+        self.goal, self.timer, self.label = np.zeros(4), 0., 'start'
+
+    def _new_goal(self):
+        r = self.rng.random()
+        if r < .15:
+            self.goal, self.label = np.zeros(4), 'stand'
+            return
+        speed = self.rng.choice([1., 1.8, 3.], p=[.5, .25, .25])
+        a = self.rng.uniform(-math.pi, math.pi)
+        left = speed / 3. * np.array([math.sin(a), math.cos(a)])  # (lx, ly)
+        f = self.rng.random()
+        if f < .6:
+            right, face = np.array([math.sin(a), math.cos(a)]), 'facing along'
+        elif f < .85:
+            right, face = np.zeros(2), 'keep facing'
+        else:
+            b = a + self.rng.uniform(math.pi / 3, 5 * math.pi / 3)
+            right, face = np.array([math.sin(b), math.cos(b)]), 'facing elsewhere'
+        self.goal = np.r_[left, right]
+        self.label = f'{speed:.1f} m/s, {face}'
+
+    def sticks(self):
+        self.timer -= 1. / 30
+        if self.timer <= 0:
+            self._new_goal()
+            self.timer = self.rng.uniform(3., 6.)
+        self.current += .08 * (self.goal - self.current)
+        if np.linalg.norm(self.goal[2:]) < .5:  # "keep facing": release the right stick at once
+            self.current[2:] = 0.
+        return tuple(float(x) for x in self.current)
+
+
+class CommandSource:
+    """Joystick commands from the Xbox pad when one is connected, otherwise RandomSticks; X switches.
+
+    While on random commands and not chosen by hand, a newly plugged-in pad is picked up (checked every 2 s).
+    A pad that disconnects drops back to random commands.
+    """
+
+    def __init__(self, xbox_cls):
+        self.xbox_cls, self.pad, self.random = xbox_cls, None, RandomSticks()
+        self.manual_random, self.next_probe = False, 0.
+        self.mode = 'xbox' if self._connect() else 'random'
+
+    def _connect(self):
+        if self.pad is None:
+            try:
+                self.pad = self.xbox_cls()
+            except Exception:  # no pad (or no pygame): stay on random commands
+                self.pad = None
+        return self.pad is not None
+
+    def toggle(self):
+        if self.mode == 'xbox':
+            self.mode, self.manual_random = 'random', True
+        elif self._connect():
+            self.mode, self.manual_random = 'xbox', False
+        else:
+            print('No Xbox controller found; staying on random commands', flush=True)
+        print(f'Joystick commands: {self.label}', flush=True)
+
+    @property
+    def label(self):
+        return 'Xbox: left stick velocity, right stick facing' if self.mode == 'xbox' else \
+            f'Random command: {self.random.label} (X: Xbox)'
+
+    def sticks(self):
+        if self.mode == 'random' and not self.manual_random and time.monotonic() > self.next_probe:
+            self.next_probe = time.monotonic() + 2.
+            if self.pad is None:
+                import pygame  # pygame only sees a hot-plugged pad after re-initialising the joystick module
+                pygame.joystick.quit()
+            if self._connect():
+                self.mode = 'xbox'
+                print(f'Joystick commands: {self.label}', flush=True)
+        if self.mode == 'xbox':
+            try:
+                return self.pad.sticks()
+            except RuntimeError as e:  # disconnected
+                print(f'{e}; using random commands', flush=True)
+                self.pad, self.mode = None, 'random'
+        return self.random.sticks()
 
 
 # ---- scene markers -----------------------------------------------------------------------------------------------
@@ -231,9 +341,10 @@ def parse_args():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('--prior', type=Path, default=DEFAULT_PRIOR, help='A-MDM checkpoint (config.yaml next to it)')
     p.add_argument('--controller', type=Path, help='target / path / joystick policy.pth (args.json next to it)')
-    p.add_argument('--xbox', action='store_true', help='joystick: drive the commands with an Xbox controller')
-    p.add_argument('--command', type=float, nargs=3, default=[1., 0., 0.], metavar=('FORWARD', 'RIGHT', 'YAW'),
-                   help='joystick without --xbox: fixed body-frame command (m/s, m/s, clockwise rad/s)')
+    p.add_argument('--xbox', action='store_true', help='(default now) joystick: Xbox pad when connected, else random commands')
+    p.add_argument('--command', type=float, nargs=3, default=None, metavar=('FORWARD', 'RIGHT', 'YAW'),
+                   help='joystick: fixed body-frame command (m/s, m/s, clockwise rad/s) instead of random '
+                        'commands (the default without --xbox, or when no pad is found)')
     p.add_argument('--no_map', action='store_true', help='target/path: no map window (random targets / paths)')
     p.add_argument('--path_seconds', type=float, default=60., help='path: length of each path')
     p.add_argument('--body', choices=['smpl', 'capsule'], default=None,
@@ -247,8 +358,6 @@ def parse_args():
 
 def main():
     a = parse_args()
-    if a.xbox and not a.controller:
-        raise SystemExit('--xbox needs a joystick --controller')
     os.chdir(ROOT)  # upstream dataset paths are relative to the project root
     torch.set_num_threads(2)
     from amdm_interactive.core.model.amdm_model import AMDM
@@ -278,8 +387,6 @@ def main():
         from amdm_interactive.envs import ENVS, XboxCommand
         manifest = json.loads((a.controller.parent / 'args.json').read_text())
         task = manifest['task']
-        if a.xbox and task != 'joystick':
-            raise SystemExit('--xbox needs a joystick policy')
         env_cfg = dict(manifest['env'], num_parallel=1, is_rendered=False)
         if task == 'path':
             env_cfg['max_timestep'] = int(a.path_seconds * 30)
@@ -288,10 +395,11 @@ def main():
         policy = PPOModel(manifest['agent'], env, a.device).eval()
         policy.load_state_dict(torch.load(a.controller, map_location=a.device, weights_only=False))
         if task == 'joystick':
-            env.set_command(a.command)
-        if a.xbox:
-            gamepad = XboxCommand()
-            sticks = StickMapper(gamepad, env)
+            env.set_command(a.command or [1., 0., 0.])
+            if a.command is None:  # Xbox when connected, random commands otherwise (X switches)
+                gamepad = CommandSource(XboxCommand)
+                sticks = StickMapper(gamepad, env)
+                print(f'Joystick commands: {gamepad.label}', flush=True)
 
     # Body and retargeting.
     frames, _ = read_bvh_loco(str(ROOT / 'data/LAFAN1' / f'{a.seed_clip}.bvh'), 'meter', 30, -90)
@@ -351,7 +459,7 @@ def main():
         if sticks is not None:
             sticks.reset()
         if task == 'path' and bev is not None:
-            drawn_path.random_path(env)  # start on a random training-style path; draw to replace it
+            new_random_path(False)  # start on a random training-style path; draw to replace it
             s.hold = False
         if task == 'target':
             env.reset_target()
@@ -438,7 +546,12 @@ def main():
         return (f'\nCommand fwd {forward:+.2f} right {right:+.2f} m/s yaw {yaw_cmd:+.2f} (blue, faint)'
                 f'\nActual  fwd {s.velocity @ bf:+.2f} right {s.velocity @ br:+.2f} m/s yaw {s.yaw_rate:+.2f} (blue, solid)'
                 f'\nFacing error {math.degrees(abs(wrap_angle(goal - by))):.0f} deg (yellow: faint goal, solid body)'
-                f'\n{"Xbox: left stick velocity, right stick facing" if gamepad else "Fixed --command"}')
+                f'\n{gamepad.label if gamepad else "Fixed --command"}')
+
+    def new_random_path(continue_motion):
+        # Facing on random paths: the map's facing offset (viewer CCW -> env yaw), unless H turned on random changes.
+        fixed = None if bev.random_facing else -bev.facing[0]
+        drawn_path.random_path(env, continue_motion=continue_motion, facing_offset=fixed)
 
     def path_overlay(markers):
         if bev is not None:
@@ -453,7 +566,7 @@ def main():
                 stroke = drawn_path.remaining(env)
                 v0, off0 = drawn_path.current_motion(env)
             elif kind == 'random':
-                drawn_path.random_path(env, continue_motion=True)
+                new_random_path(True)
             elif kind == 'stop':
                 drawn_path.stand_still(env)
             s.hold = kind == 'stop' or (s.hold and kind not in ('path', 'random'))
@@ -463,7 +576,7 @@ def main():
                     env.root_xz[0].cpu().numpy(), float(env.body_yaw()[0]), stroke, bev.speed, -bev.facing[0],
                     env.path_len, start_speed=v0, start_offset=off0))
             if not s.hold and drawn_path.finished(env):  # keep going: chain a new random path from here
-                drawn_path.random_path(env, continue_motion=True)
+                new_random_path(True)
         t, n = int(env.path_t[0]), env.path_len
         path_xy = env.path[0].cpu().numpy() * [1, -1]
         speeds = env.path_vel[0].norm(dim=-1).cpu().numpy()
@@ -482,7 +595,7 @@ def main():
                 f'\nFacing error {math.degrees(abs(wrap_angle(body_face - cmd_face))):.0f} deg (red = command, green = body)')
 
     overlays = {'target': target_overlay, 'joystick': joystick_overlay, 'path': path_overlay}
-    print('Viewer keys: R reset | Space pause | C SMPL mesh / capsule person | E EMA/current weights | G ground-truth clip', flush=True)
+    print('Viewer keys: R reset | Space pause | C SMPL mesh / capsule person | E EMA/current weights | G ground-truth clip | X Xbox / random joystick commands', flush=True)
     body_kind = set_body(body_kind)
     with mujoco.viewer.launch_passive(body.model, body.data, key_callback=keys.put) as viewer:
         viewer.cam.distance, viewer.cam.azimuth, viewer.cam.elevation = 3., 135, -15
@@ -503,6 +616,11 @@ def main():
                     model.use_ema = not model.use_ema; reset()
                 elif code == ord('G'):
                     s.ground_truth = not s.ground_truth; reset()
+                elif code == ord('X') and gamepad is not None:
+                    gamepad.toggle()
+                    sticks.frame = None  # stick frame follows the camera at the switch
+                    with viewer.lock():  # X is also MuJoCo's texture toggle: keep the floor textured
+                        viewer.opt.flags[mujoco.mjtVisFlag.mjVIS_TEXTURE] = 1
             if not s.paused and s.status == 'Running' and s.frame > 0:
                 step()
             if s.status == 'Running':

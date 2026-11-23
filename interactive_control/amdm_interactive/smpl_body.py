@@ -122,6 +122,15 @@ def _align(a: np.ndarray, b: np.ndarray) -> Rotation:
     return Rotation.from_quat(q[[1, 2, 3, 0]])
 
 
+
+def add_shadow_settings(root):
+    """Sharp shadows on the 500 m floor. The floor makes MuJoCo's scene extent 100 m and the directional light's
+    shadow map is sized from it (shadowclip * extent), so by default one map covers ~200 m and the shadows come out
+    as ~5 cm blocks. The light follows the character, so a ~5 m shadow box around it is enough."""
+    visual = ET.SubElement(root, "visual")
+    ET.SubElement(visual, "quality", shadowsize="8192")
+    ET.SubElement(visual, "map", shadowclip="0.05")
+
 class SMPLMujocoBody:
     """SMPL-shaped kinematic body with capsules usable in a MuJoCo scene.
 
@@ -157,6 +166,7 @@ class SMPLMujocoBody:
             deformable = ET.SubElement(root, "deformable")
             ET.SubElement(deformable, "skin", name="smpl_surface", file=str(skin_path),
                           rgba="0.78 0.61 0.48 1")
+        add_shadow_settings(root)
         world = ET.SubElement(root, "worldbody")
         ET.SubElement(world, "light", name="body_light", pos="0 -3 5",
                       dir="0 0.4 -1", directional="true")

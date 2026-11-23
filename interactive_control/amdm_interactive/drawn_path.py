@@ -115,11 +115,12 @@ def remaining(env, index=0, step=3):
     return np.r_[pts[::step], pts[-1:]]
 
 
-def random_path(env, index=0, continue_motion=False):
+def random_path(env, index=0, continue_motion=False, facing_offset=None):
     """A training-generator path (varying speed and facing) shifted to start at the character.
 
-    continue_motion: start at the current waypoint's speed, heading and facing offset (seamless chaining)."""
-    kwargs = {}
+    continue_motion: start at the current waypoint's speed, heading and facing offset (seamless chaining).
+    facing_offset: None = random facing changes as in training; a number (env yaw, rad) = hold that offset."""
+    kwargs = {'facing_offset': facing_offset}
     if continue_motion:
         speed, offset = current_motion(env, index)
         t = int(env.path_t[index])
@@ -127,7 +128,7 @@ def random_path(env, index=0, continue_motion=False):
         heading = math.atan2(float(v[1]), float(v[0])) if speed > 1e-3 else float(env.body_yaw()[index])
         if env.facing_command == 'forward':
             offset = 0.
-        kwargs = dict(start_speed=speed, start_heading=heading, start_offset=offset)
+        kwargs.update(start_speed=speed, start_heading=heading, start_offset=offset)
     path, vel, face = env.sample_paths(torch.arange(1, device=env.path.device), **kwargs)
     path = path[0] + env.root_xz[index]
     install(env, path, vel[0], face[0], index)

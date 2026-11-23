@@ -80,8 +80,10 @@ class FacingPathEnv(TargetEnv):
         idx = idx.cummax(dim=1).values
         return values.gather(1, idx)
 
-    def sample_paths(self, ids, start_speed=0., start_heading=None, start_offset=0.):
-        """Random paths for `ids`; start_* continue a previous path (speed m/s, heading and facing offset rad)."""
+    def sample_paths(self, ids, start_speed=0., start_heading=None, start_offset=0., facing_offset=None):
+        """Random paths for `ids`; start_* continue a previous path (speed m/s, heading and facing offset rad).
+
+        facing_offset: None = random facing offsets (training); a number = hold that offset from the tangent."""
         n, length, dt, dev = len(ids), self.path_len, 1. / self.data_fps, self.device
         # Speed targets: standstill / slow / walk-jog / run-sprint.
         band = torch.multinomial(torch.tensor([.15, .35, .3, .2], device=dev), n * length, True).view(n, length)
@@ -101,6 +103,8 @@ class FacingPathEnv(TargetEnv):
         offset = self._hold(self._segments(n), offset.gather(-1, kind[..., None]).squeeze(-1))
         if self.facing_command == 'forward':
             offset.zero_()
+        elif facing_offset is not None:
+            offset.fill_(float(facing_offset))
 
         speed = torch.full((n,), float(start_speed), device=dev)
         heading = (torch.empty(n, device=dev).uniform_(-math.pi, math.pi) if start_heading is None

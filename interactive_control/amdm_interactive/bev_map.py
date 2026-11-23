@@ -70,13 +70,15 @@ class PathSketchMap(BEVMap):
 
     Keys (map window focused): 1-5 speed presets, Up/Down speed +-0.25 m/s, Left/Right turn the facing offset
     by 15 deg, F jump to the next of forward / left / backward / right of travel, G random path (training
-    generator), right-click stop here. Speed and facing
+    generator; it holds the current facing offset unless H turned on random facing changes), right-click stop
+    here. Speed and facing
     changes also re-time the path being followed. The map stays still while a stroke is being drawn.
     """
     def __init__(self, size=620, scale=20., allow_facing=True):
         super().__init__(size, scale)
-        self.pg.display.set_caption('Path map: drag draw | 1-5/Up/Down speed | Left/Right/F facing | G random | right-click stop')
+        self.pg.display.set_caption('Path map: drag draw | 1-5/Up/Down speed | Left/Right/F facing | G random | H random facing | right-click stop')
         self.speed, self.facing_offset, self.allow_facing = SPEEDS[1], 0., allow_facing
+        self.random_facing = False  # H: random paths also change facing randomly (as in training)
         self.stroke, self.frozen = None, None
 
     @property
@@ -130,6 +132,10 @@ class PathSketchMap(BEVMap):
                     self.facing_offset = (nxt + math.pi) % (2 * math.pi) - math.pi
                     out = out or ('retime', None)
                 elif e.key == pg.K_g:out = ('random', None)
+                elif e.key == pg.K_h and self.allow_facing:  # random facing changes on random paths: on / off
+                    self.random_facing = not self.random_facing
+                    print(f'Random paths: {"random facing changes" if self.random_facing else "fixed facing"}', flush=True)
+                    out = ('random', None)
         s = self.screen
         s.fill((24, 26, 30))
         half = self.size / 2 / self.scale + 1
